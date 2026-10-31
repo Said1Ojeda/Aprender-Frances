@@ -1,0 +1,15 @@
+{
+  "name": "allez",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Francés básico desde cero para quien habla español",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

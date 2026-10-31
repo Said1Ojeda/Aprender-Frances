@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Allez! · Francés desde cero</title>
+<meta name="description" content="Aprende francés básico desde el español con lecciones cortas, sin cuenta y sin anuncios.">
+<meta name="theme-color" content="#2F5BEA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<header class="barra">
+  <div class="envoltura">
+    <button class="marca" type="button" data-ir="inicio" aria-label="Ir al inicio">Allez<span>!</span></button>
+    <div class="indicadores" id="indicadores"></div>
+  </div>
+</header>
+
+<main>
+  <!-- inicio con el camino de unidades -->
+  <section class="pantalla activa" id="p-inicio" aria-labelledby="t-inicio">
+    <div class="envoltura">
+      <div class="portada">
+        <p class="ceja" id="saludo">Bonjour</p>
+        <h1 id="t-inicio">Francés desde cero, en ratitos.</h1>
+        <p class="bajada">Lecciones de cinco minutos pensadas para quien habla español. Empieza por arriba y ve desbloqueando.</p>
+      </div>
+      <ol class="camino" id="camino"></ol>
+    </div>
+  </section>
+
+  <!-- leccion -->
+  <section class="pantalla" id="p-leccion" aria-label="Lección">
+    <div class="envoltura angosta">
+      <div class="leccion-arriba">
+        <button class="cerrar" type="button" id="salir" aria-label="Salir de la lección">✕</button>
+        <div class="avance" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="avance"><i></i></div>
+      </div>
+      <div class="ejercicio" id="ejercicio" aria-live="polite"></div>
+    </div>
+    <div class="pie" id="pie">
+      <div class="envoltura angosta pie-dentro">
+        <div class="veredicto" id="veredicto" aria-live="assertive"></div>
+        <button class="boton grande" type="button" id="comprobar" disabled>Comprobar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- fin de leccion -->
+  <section class="pantalla" id="p-fin" aria-labelledby="t-fin">
+    <div class="envoltura angosta centro">
+      <p class="sello-fin" aria-hidden="true">✓</p>
+      <h2 id="t-fin">¡Lección terminada!</h2>
+      <p class="bajada" id="fin-frase"></p>
+      <div class="resumen" id="resumen"></div>
+      <div class="tip" id="tip"></div>
+      <button class="boton grande" type="button" data-ir="inicio">Seguir</button>
+    </div>
+  </section>
+</main>
+
+<script src="js/datos.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
