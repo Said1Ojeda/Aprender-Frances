@@ -157,6 +157,40 @@ h1, h2, h3 {
   font-size: 1.08rem;
 }
 
+/* aviso de repaso pendiente */
+.repaso {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+  padding: 20px 22px;
+  border: 1px solid color-mix(in srgb, var(--sol) 55%, transparent);
+  border-radius: 18px;
+  background: var(--sol-claro);
+}
+
+.repaso[hidden] {
+  display: none;
+}
+
+.repaso-texto b {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.25rem;
+}
+
+.repaso-texto span {
+  color: var(--tinta-suave);
+}
+
+@media (max-width: 640px) {
+  .repaso {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* camino de unidades */
 .camino {
   list-style: none;
