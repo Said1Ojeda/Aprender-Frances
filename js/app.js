@@ -606,4 +606,8 @@
             elegir(actual.opciones[n - 1]);
     });
     irInicio();
+    // solo funciona con https o en localhost, en github pages ya hay https
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { }));
+    }
 })();
