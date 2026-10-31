@@ -29,7 +29,7 @@
     const CLAVE = 'allez';
 
     function leerProgreso(): Progreso {
-        const base: Progreso = { unidades: {}, tarjetas: {}, voz: true };
+        const base: Progreso = { unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 } };
         try {
             const guardado = JSON.parse(localStorage.getItem(CLAVE) || '{}');
             return Object.assign(base, guardado);
@@ -42,6 +42,28 @@
 
     function guardar() {
         try { localStorage.setItem(CLAVE, JSON.stringify(progreso)); } catch (e) {}
+    }
+
+    // experiencia, niveles y racha
+
+    const META_DIARIA = 30;
+    const XP_POR_NIVEL = 100;
+
+    const nivel = () => Math.floor(progreso.xp / XP_POR_NIVEL) + 1;
+    const xpDeHoy = () => progreso.xpHoy.dia === Repaso.dia() ? progreso.xpHoy.xp : 0;
+
+    // si ayer no practicaste la racha ya se perdio aunque el numero siga guardado
+    const rachaViva = () => progreso.ultimoDia === Repaso.dia() || progreso.ultimoDia === Repaso.dia(-1) ? progreso.racha : 0;
+
+    // devuelve true si hoy es el primer dia que suma a la racha
+    function sumarDia(xp: number): boolean {
+        const hoy = Repaso.dia();
+        progreso.xp += xp;
+        progreso.xpHoy = { dia: hoy, xp: xpDeHoy() + xp };
+        if (progreso.ultimoDia === hoy) return false;
+        progreso.racha = progreso.ultimoDia === Repaso.dia(-1) ? progreso.racha + 1 : 1;
+        progreso.ultimoDia = hoy;
+        return true;
     }
 
     // pantallas
@@ -98,17 +120,52 @@
             li.appendChild(b);
             return li;
         }));
+        pintarTablero();
         pintarRepaso();
         pintarIndicadores();
         mostrar('inicio');
     }
 
+    function barra(pct: number, clase = ''): HTMLElement {
+        const b = crear('div', 'barrita ' + clase);
+        const i = crear('i');
+        i.style.width = Math.min(100, Math.round(pct * 100)) + '%';
+        b.appendChild(i);
+        return b;
+    }
+
+    function pintarTablero() {
+        const hoy = xpDeHoy();
+        const racha = rachaViva();
+        const enNivel = progreso.xp % XP_POR_NIVEL;
+
+        const tarjeta = (titulo: string, valor: string, detalle: string, avance?: HTMLElement) => {
+            const t = crear('div', 'marcador');
+            t.append(crear('span', 'marcador-titulo', titulo), crear('b', '', valor));
+            if (avance) t.appendChild(avance);
+            t.appendChild(crear('span', 'marcador-detalle', detalle));
+            return t;
+        };
+
+        $('tablero').replaceChildren(
+            tarjeta('Racha', '🔥 ' + racha + (racha === 1 ? ' día' : ' días'),
+                racha && progreso.ultimoDia !== Repaso.dia() ? 'Practica hoy para no perderla' : racha ? 'Hoy ya cuenta' : 'Haz una lección para empezarla'),
+            tarjeta('Meta de hoy', Math.min(hoy, META_DIARIA) + ' / ' + META_DIARIA + ' XP',
+                hoy >= META_DIARIA ? '¡Cumplida, très bien!' : 'Más o menos dos lecciones', barra(hoy / META_DIARIA, 'meta')),
+            tarjeta('Nivel ' + nivel(), progreso.xp + ' XP',
+                (XP_POR_NIVEL - enNivel) + ' XP para el nivel ' + (nivel() + 1), barra(enNivel / XP_POR_NIVEL)),
+            tarjeta('Aprendidas', String(Repaso.aprendidas(progreso.tarjetas)),
+                'palabras que ya aguantan varios días')
+        );
+    }
+
     function pintarIndicadores() {
-        const hechas = UNIDADES.filter(u => progreso.unidades[u.id]).length;
         const caja = $('indicadores');
-        const t = crear('span', '', hechas + ' / ' + UNIDADES.length);
-        t.title = 'Unidades practicadas';
-        caja.replaceChildren(t);
+        const racha = crear('span', 'chip', '🔥 ' + rachaViva());
+        racha.title = 'Días seguidos practicando';
+        const xp = crear('span', 'chip', '⭐ ' + progreso.xp);
+        xp.title = 'Experiencia total';
+        caja.replaceChildren(racha, xp);
 
         // sin voz en frances no tiene caso el boton
         if (Voz.puedeHablar()) {
@@ -539,6 +596,10 @@
         if (!sesion) return;
         const s = sesion;
         const pct = s.intentos ? s.aciertos / s.intentos : 0;
+        // diez por terminar, uno por acierto y cinco extra si no fallaste nada
+        const ganado = 10 + s.aciertos + (pct === 1 ? 5 : 0);
+        const nivelAntes = nivel();
+        const nuevoDia = sumarDia(ganado);
         if (s.unidad) {
             const antes = progreso.unidades[s.unidad.id];
             progreso.unidades[s.unidad.id] = { veces: (antes?.veces ?? 0) + 1, mejor: Math.max(antes?.mejor ?? 0, pct) };
@@ -553,9 +614,15 @@
             return d;
         };
         $('resumen').replaceChildren(
+            dato('+' + ganado, 'XP ganada'),
             dato(Math.round(pct * 100) + '%', 'de aciertos'),
-            dato(String(Repaso.aprendidas(progreso.tarjetas)), 'palabras aprendidas')
+            dato('🔥 ' + progreso.racha, progreso.racha === 1 ? 'día de racha' : 'días de racha')
         );
+        const extra: string[] = [];
+        if (nuevoDia && progreso.racha > 1) extra.push('Tu racha sube a ' + progreso.racha + ' días.');
+        if (nivel() > nivelAntes) extra.push('¡Subiste al nivel ' + nivel() + '!');
+        if (xpDeHoy() >= META_DIARIA && xpDeHoy() - ganado < META_DIARIA) extra.push('Cumpliste la meta de hoy.');
+        if (extra.length) $('fin-frase').textContent += ' ' + extra.join(' ');
 
         const tip = $('tip');
         if (s.unidad) tip.replaceChildren(crear('b', '', s.unidad.tip.titulo), crear('span', '', s.unidad.tip.texto));
@@ -563,6 +630,7 @@
         $('t-fin').textContent = s.unidad ? '¡Lección terminada!' : '¡Repaso terminado!';
         sesion = null;
         actual = null;
+        pintarIndicadores();
         mostrar('fin');
     }
 

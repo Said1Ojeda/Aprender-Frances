@@ -43,4 +43,8 @@ interface Progreso {
     tarjetas: Record<string, Tarjeta>;
     // si la palabra se pronuncia sola al aparecer
     voz: boolean;
+    xp: number;
+    racha: number;
+    ultimoDia: string;
+    xpHoy: { dia: string; xp: number };
 }
