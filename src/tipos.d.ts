@@ -17,7 +17,7 @@ interface Unidad {
     tip: { titulo: string; texto: string };
 }
 
-type TipoEjercicio = 'elegir' | 'inverso' | 'escribir' | 'escuchar';
+type TipoEjercicio = 'elegir' | 'inverso' | 'escribir' | 'escuchar' | 'hablar';
 
 interface Ejercicio {
     tipo: TipoEjercicio;

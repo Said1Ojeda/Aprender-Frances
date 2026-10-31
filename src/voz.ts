@@ -45,5 +45,56 @@ const Voz = (() => {
         if (hay) speechSynthesis.cancel();
     }
 
-    return { puedeHablar, decir, callar, alCambiar: (f: () => void) => oyentes.push(f) };
+    // reconocimiento de voz, en chrome y safari viene con otro nombre
+    interface Reconocedor {
+        lang: string;
+        interimResults: boolean;
+        maxAlternatives: number;
+        onresult: ((ev: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+        onerror: ((ev: { error: string }) => void) | null;
+        onend: (() => void) | null;
+        start(): void;
+        abort(): void;
+    }
+    type ClaseReconocedor = new () => Reconocedor;
+    const ventana = window as unknown as { SpeechRecognition?: ClaseReconocedor; webkitSpeechRecognition?: ClaseReconocedor };
+    const Reconocimiento = ventana.SpeechRecognition || ventana.webkitSpeechRecognition;
+
+    function puedeOir(): boolean {
+        return !!Reconocimiento;
+    }
+
+    let oyendo: Reconocedor | null = null;
+
+    // devuelve lo que entendio, varias opciones por si la primera no es la buena
+    function oir(): Promise<string[]> {
+        return new Promise((listo, falla) => {
+            if (!Reconocimiento) return falla(new Error('no-soportado'));
+            callar();
+            const r = new Reconocimiento();
+            r.lang = 'fr-FR';
+            r.interimResults = false;
+            r.maxAlternatives = 5;
+            let dicho: string[] = [];
+            r.onresult = ev => {
+                const primero = ev.results[0];
+                dicho = Array.from({ length: primero.length }, (_, i) => primero[i].transcript);
+            };
+            r.onerror = ev => falla(new Error(ev.error));
+            r.onend = () => {
+                oyendo = null;
+                if (dicho.length) listo(dicho);
+                else falla(new Error('no-speech'));
+            };
+            oyendo = r;
+            r.start();
+        });
+    }
+
+    function dejarDeOir() {
+        if (oyendo) oyendo.abort();
+        oyendo = null;
+    }
+
+    return { puedeHablar, decir, callar, puedeOir, oir, dejarDeOir, alCambiar: (f: () => void) => oyentes.push(f) };
 })();

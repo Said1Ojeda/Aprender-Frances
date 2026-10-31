@@ -42,5 +42,43 @@ const Voz = (() => {
         if (hay)
             speechSynthesis.cancel();
     }
-    return { puedeHablar, decir, callar, alCambiar: (f) => oyentes.push(f) };
+    const ventana = window;
+    const Reconocimiento = ventana.SpeechRecognition || ventana.webkitSpeechRecognition;
+    function puedeOir() {
+        return !!Reconocimiento;
+    }
+    let oyendo = null;
+    // devuelve lo que entendio, varias opciones por si la primera no es la buena
+    function oir() {
+        return new Promise((listo, falla) => {
+            if (!Reconocimiento)
+                return falla(new Error('no-soportado'));
+            callar();
+            const r = new Reconocimiento();
+            r.lang = 'fr-FR';
+            r.interimResults = false;
+            r.maxAlternatives = 5;
+            let dicho = [];
+            r.onresult = ev => {
+                const primero = ev.results[0];
+                dicho = Array.from({ length: primero.length }, (_, i) => primero[i].transcript);
+            };
+            r.onerror = ev => falla(new Error(ev.error));
+            r.onend = () => {
+                oyendo = null;
+                if (dicho.length)
+                    listo(dicho);
+                else
+                    falla(new Error('no-speech'));
+            };
+            oyendo = r;
+            r.start();
+        });
+    }
+    function dejarDeOir() {
+        if (oyendo)
+            oyendo.abort();
+        oyendo = null;
+    }
+    return { puedeHablar, decir, callar, puedeOir, oir, dejarDeOir, alCambiar: (f) => oyentes.push(f) };
 })();

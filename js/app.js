@@ -138,16 +138,28 @@
             tipo = 'inverso';
         if (tipo === 'escuchar' && !Voz.puedeHablar())
             tipo = 'inverso';
+        if (tipo === 'hablar' && !puedeHablarAhora())
+            tipo = 'inverso';
         const campo = tipo === 'elegir' ? 'es' : 'fr';
-        const opciones = tipo === 'escribir' ? [] : revolver([palabra[campo], ...distractores(palabra, unidad, campo)]);
+        const opciones = tipo === 'escribir' || tipo === 'hablar' ? [] : revolver([palabra[campo], ...distractores(palabra, unidad, campo)]);
         return { tipo, palabra, opciones };
     }
     // la primera vez cada palabra se presenta para reconocerla y luego se pide al reves
+    // si dices que ahora no puedes hablar se dejan de pedir un rato
+    let sinMicrofonoHasta = 0;
+    const puedeHablarAhora = () => Voz.puedeOir() && Date.now() > sinMicrofonoHasta;
     function tiposDeRepaso() {
         const tipos = ['inverso', 'escribir'];
         if (Voz.puedeHablar())
             tipos.push('escuchar');
+        if (puedeHablarAhora())
+            tipos.push('hablar');
         return tipos;
+    }
+    // hablar cansa, con dos por leccion basta
+    function limitarHablar(lista, unidad) {
+        let cuantos = 0;
+        return lista.map(e => e.tipo === 'hablar' && ++cuantos > 2 ? ejercicio('inverso', e.palabra, unidad) : e);
     }
     function armarLeccion(unidad) {
         const nueva = !progreso.unidades[unidad.id];
@@ -156,9 +168,9 @@
             const presentar = palabras.map(p => ejercicio('elegir', p, unidad));
             const repasar = revolver(palabras).slice(0, LARGO - presentar.length)
                 .map(p => ejercicio(azar(tiposDeRepaso()), p, unidad));
-            return [...presentar.slice(0, 4), ...repasar.slice(0, 1), ...presentar.slice(4), ...repasar.slice(1)];
+            return limitarHablar([...presentar.slice(0, 4), ...repasar.slice(0, 1), ...presentar.slice(4), ...repasar.slice(1)], unidad);
         }
-        return palabras.map(p => ejercicio(azar(['elegir', ...tiposDeRepaso()]), p, unidad));
+        return limitarHablar(palabras.map(p => ejercicio(azar(['elegir', ...tiposDeRepaso()]), p, unidad)), unidad);
     }
     let sesion = null;
     let actual = null;
@@ -202,7 +214,8 @@
         elegir: '¿Qué significa?',
         inverso: '¿Cómo se dice en francés?',
         escribir: 'Escríbelo en francés',
-        escuchar: '¿Qué escuchaste?'
+        escuchar: '¿Qué escuchaste?',
+        hablar: 'Dilo en voz alta'
     };
     function botonAltavoz(texto, lento = false) {
         const b = crear('button', 'altavoz' + (lento ? ' lento' : ''), lento ? '🐢' : '🔊');
@@ -213,7 +226,7 @@
     }
     function pintarEjercicio(e) {
         const partes = [crear('p', 'consigna', CONSIGNA[e.tipo])];
-        const enFrances = e.tipo === 'elegir';
+        const enFrances = e.tipo === 'elegir' || e.tipo === 'hablar';
         if (e.tipo === 'escuchar') {
             // aqui la palabra no se ve, solo se oye
             const oir = crear('div', 'oir');
@@ -229,7 +242,7 @@
             palabra.appendChild(crear('span', '', enFrances ? e.palabra.fr : e.palabra.es));
             if (enFrances && Voz.puedeHablar()) {
                 palabra.appendChild(botonAltavoz(e.palabra.fr));
-                if (progreso.voz)
+                if (progreso.voz && e.tipo === 'elegir')
                     setTimeout(() => Voz.decir(e.palabra.fr), 250);
             }
             partes.push(palabra);
@@ -237,6 +250,8 @@
         }
         if (e.tipo === 'escribir')
             partes.push(...campoEscribir());
+        else if (e.tipo === 'hablar')
+            partes.push(...campoHablar());
         else
             partes.push(pintarOpciones(e));
         caja.replaceChildren(...partes);
@@ -295,6 +310,56 @@
         }
         return [area, acentos];
     }
+    function campoHablar() {
+        const mic = crear('button', 'microfono');
+        mic.type = 'button';
+        mic.setAttribute('aria-label', 'Hablar');
+        mic.appendChild(crear('span', 'microfono-icono', '🎙️'));
+        mic.appendChild(crear('span', '', 'Toca y habla'));
+        const estado = crear('p', 'estado-mic');
+        estado.setAttribute('aria-live', 'polite');
+        mic.addEventListener('click', () => {
+            if (revisado || mic.classList.contains('oyendo'))
+                return;
+            mic.classList.add('oyendo');
+            estado.textContent = 'Te escucho…';
+            Voz.oir().then(dicho => {
+                mic.classList.remove('oyendo');
+                estado.textContent = '';
+                oido = dicho;
+                respuesta = dicho[0];
+                revisar();
+            }).catch((err) => {
+                mic.classList.remove('oyendo');
+                if (err.message === 'not-allowed' || err.message === 'service-not-allowed') {
+                    estado.textContent = 'No hay permiso para el micrófono. Puedes saltarte este ejercicio.';
+                }
+                else if (err.message === 'no-speech') {
+                    estado.textContent = 'No te escuché, toca otra vez y habla un poco más fuerte.';
+                }
+                else {
+                    estado.textContent = 'El micrófono no respondió, intenta otra vez.';
+                }
+            });
+        });
+        const saltar = crear('button', 'saltar', 'Ahora no puedo hablar');
+        saltar.type = 'button';
+        saltar.addEventListener('click', () => {
+            Voz.dejarDeOir();
+            sinMicrofonoHasta = Date.now() + 15 * 60 * 1000;
+            saltarActual();
+        });
+        return [mic, estado, saltar];
+    }
+    // se cuenta como hecho pero no como intento, no es justo que baje el porcentaje
+    function saltarActual() {
+        if (!sesion || !actual)
+            return;
+        sesion.hechos++;
+        sesion.cola = sesion.cola.map(e => e.tipo === 'hablar' ? ejercicio('inverso', e.palabra, sesion.unidad) : e);
+        siguiente();
+    }
+    let oido = [];
     // revision de respuestas
     const sinAcentos = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
     function limpiar(t) {
@@ -318,6 +383,21 @@
         }
         return fila[b.length];
     }
+    // de lo que entendio el navegador se queda con lo que mas se parece
+    function revisarHablado(dicho, correcto) {
+        const b = sinAcentos(limpiar(correcto));
+        let mejor = 0, frase = dicho[0] ?? '';
+        for (const d of dicho) {
+            const a = sinAcentos(limpiar(d));
+            const parecido = 1 - distancia(a, b) / Math.max(a.length, b.length, 1);
+            if (parecido > mejor) {
+                mejor = parecido;
+                frase = d;
+            }
+        }
+        const nota = 'Escuché «' + frase + '»';
+        return { bien: mejor >= .75, nota };
+    }
     function revisarEscrito(escrito, correcto) {
         const a = limpiar(escrito), b = limpiar(correcto);
         if (a === b)
@@ -334,7 +414,9 @@
         const e = actual;
         const correcto = e.tipo === 'elegir' ? e.palabra.es : e.palabra.fr;
         Voz.callar();
-        const r = e.tipo === 'escribir' ? revisarEscrito(respuesta, correcto) : { bien: respuesta === correcto };
+        const r = e.tipo === 'escribir' ? revisarEscrito(respuesta, correcto)
+            : e.tipo === 'hablar' ? revisarHablado(oido, correcto)
+                : { bien: respuesta === correcto };
         revisado = true;
         sesion.intentos++;
         caja.querySelectorAll('.opcion').forEach(o => {
@@ -347,6 +429,7 @@
         const area = caja.querySelector('textarea');
         if (area)
             area.readOnly = true;
+        caja.querySelectorAll('.microfono, .saltar').forEach(b => b.disabled = true);
         if (r.bien) {
             sesion.aciertos++;
             sesion.hechos++;
@@ -362,8 +445,8 @@
             sesion.hechos++;
         }
         pie.classList.add(r.bien ? 'bien' : 'mal');
-        const titulo = crear('b', '', r.bien ? azar(['¡Muy bien!', '¡Exacto!', 'Parfait !', '¡Eso!']) : 'Respuesta correcta');
-        const detalle = crear('span', '', r.bien ? r.nota ?? '' : correcto);
+        const titulo = crear('b', '', r.bien ? azar(['¡Muy bien!', '¡Exacto!', 'Parfait !', '¡Eso!']) : e.tipo === 'hablar' ? 'Casi, otra vez al final' : 'Respuesta correcta');
+        const detalle = crear('span', '', r.bien ? r.nota ?? '' : e.tipo === 'hablar' ? (r.nota ?? '') + ', se dice ' + correcto : correcto);
         if (!r.bien && e.tipo !== 'elegir')
             detalle.lang = 'fr';
         veredicto.replaceChildren(titulo, detalle);
