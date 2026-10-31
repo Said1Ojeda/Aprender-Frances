@@ -27,7 +27,7 @@
     // progreso guardado
     const CLAVE = 'allez';
     function leerProgreso() {
-        const base = { unidades: {} };
+        const base = { unidades: {}, voz: true };
         try {
             const guardado = JSON.parse(localStorage.getItem(CLAVE) || '{}');
             return Object.assign(base, guardado);
@@ -95,7 +95,24 @@
         const t = crear('span', '', hechas + ' / ' + UNIDADES.length);
         t.title = 'Unidades practicadas';
         caja.replaceChildren(t);
+        // sin voz en frances no tiene caso el boton
+        if (Voz.puedeHablar()) {
+            const b = crear('button', 'interruptor', progreso.voz ? '🔊' : '🔇');
+            b.type = 'button';
+            b.setAttribute('aria-pressed', String(progreso.voz));
+            b.setAttribute('aria-label', 'Pronunciar las palabras solas');
+            b.title = progreso.voz ? 'Las palabras se pronuncian solas' : 'Pronunciación automática apagada';
+            b.addEventListener('click', () => {
+                progreso.voz = !progreso.voz;
+                if (!progreso.voz)
+                    Voz.callar();
+                guardar();
+                pintarIndicadores();
+            });
+            caja.appendChild(b);
+        }
     }
+    Voz.alCambiar(pintarIndicadores);
     // armado de ejercicios
     const LARGO = 10;
     const MAX_ESCRIBIR = 22;
@@ -119,21 +136,29 @@
     function ejercicio(tipo, palabra, unidad) {
         if (tipo === 'escribir' && palabra.fr.length > MAX_ESCRIBIR)
             tipo = 'inverso';
+        if (tipo === 'escuchar' && !Voz.puedeHablar())
+            tipo = 'inverso';
         const campo = tipo === 'elegir' ? 'es' : 'fr';
         const opciones = tipo === 'escribir' ? [] : revolver([palabra[campo], ...distractores(palabra, unidad, campo)]);
         return { tipo, palabra, opciones };
     }
     // la primera vez cada palabra se presenta para reconocerla y luego se pide al reves
+    function tiposDeRepaso() {
+        const tipos = ['inverso', 'escribir'];
+        if (Voz.puedeHablar())
+            tipos.push('escuchar');
+        return tipos;
+    }
     function armarLeccion(unidad) {
         const nueva = !progreso.unidades[unidad.id];
         const palabras = revolver(unidad.palabras).slice(0, nueva ? 7 : LARGO);
         if (nueva) {
             const presentar = palabras.map(p => ejercicio('elegir', p, unidad));
             const repasar = revolver(palabras).slice(0, LARGO - presentar.length)
-                .map(p => ejercicio(azar(['inverso', 'escribir']), p, unidad));
+                .map(p => ejercicio(azar(tiposDeRepaso()), p, unidad));
             return [...presentar.slice(0, 4), ...repasar.slice(0, 1), ...presentar.slice(4), ...repasar.slice(1)];
         }
-        return palabras.map(p => ejercicio(azar(['elegir', 'inverso', 'escribir']), p, unidad));
+        return palabras.map(p => ejercicio(azar(['elegir', ...tiposDeRepaso()]), p, unidad));
     }
     let sesion = null;
     let actual = null;
@@ -176,16 +201,40 @@
     const CONSIGNA = {
         elegir: '¿Qué significa?',
         inverso: '¿Cómo se dice en francés?',
-        escribir: 'Escríbelo en francés'
+        escribir: 'Escríbelo en francés',
+        escuchar: '¿Qué escuchaste?'
     };
+    function botonAltavoz(texto, lento = false) {
+        const b = crear('button', 'altavoz' + (lento ? ' lento' : ''), lento ? '🐢' : '🔊');
+        b.type = 'button';
+        b.setAttribute('aria-label', lento ? 'Escuchar despacio' : 'Escuchar');
+        b.addEventListener('click', () => Voz.decir(texto, lento));
+        return b;
+    }
     function pintarEjercicio(e) {
         const partes = [crear('p', 'consigna', CONSIGNA[e.tipo])];
         const enFrances = e.tipo === 'elegir';
-        const palabra = crear('div', 'palabra');
-        palabra.lang = enFrances ? 'fr' : 'es';
-        palabra.appendChild(crear('span', '', enFrances ? e.palabra.fr : e.palabra.es));
-        partes.push(palabra);
-        partes.push(crear('p', 'pista', enFrances && e.palabra.pista ? 'Suena como ' + e.palabra.pista : ''));
+        if (e.tipo === 'escuchar') {
+            // aqui la palabra no se ve, solo se oye
+            const oir = crear('div', 'oir');
+            const grande = botonAltavoz(e.palabra.fr);
+            grande.classList.add('grande');
+            oir.append(grande, botonAltavoz(e.palabra.fr, true));
+            partes.push(oir);
+            setTimeout(() => Voz.decir(e.palabra.fr), 250);
+        }
+        else {
+            const palabra = crear('div', 'palabra');
+            palabra.lang = enFrances ? 'fr' : 'es';
+            palabra.appendChild(crear('span', '', enFrances ? e.palabra.fr : e.palabra.es));
+            if (enFrances && Voz.puedeHablar()) {
+                palabra.appendChild(botonAltavoz(e.palabra.fr));
+                if (progreso.voz)
+                    setTimeout(() => Voz.decir(e.palabra.fr), 250);
+            }
+            partes.push(palabra);
+            partes.push(crear('p', 'pista', enFrances && e.palabra.pista ? 'Suena como ' + e.palabra.pista : ''));
+        }
         if (e.tipo === 'escribir')
             partes.push(...campoEscribir());
         else
@@ -284,6 +333,7 @@
             return;
         const e = actual;
         const correcto = e.tipo === 'elegir' ? e.palabra.es : e.palabra.fr;
+        Voz.callar();
         const r = e.tipo === 'escribir' ? revisarEscrito(respuesta, correcto) : { bien: respuesta === correcto };
         revisado = true;
         sesion.intentos++;
@@ -320,6 +370,9 @@
         boton.textContent = 'Continuar';
         boton.disabled = false;
         boton.focus();
+        // al acertar se oye como se dice, asi se queda pegado el sonido con la palabra
+        if (r.bien && progreso.voz && e.tipo !== 'elegir' && e.tipo !== 'escuchar')
+            Voz.decir(e.palabra.fr);
     }
     boton.addEventListener('click', () => revisado ? siguiente() : revisar());
     function terminar() {
@@ -343,7 +396,10 @@
         actual = null;
         mostrar('fin');
     }
-    $('salir').addEventListener('click', irInicio);
+    $('salir').addEventListener('click', () => {
+        Voz.callar();
+        irInicio();
+    });
     // teclado, numeros para elegir y enter para seguir
     document.addEventListener('keydown', ev => {
         if (document.body.dataset.pantalla !== 'leccion' || !actual)
@@ -359,8 +415,10 @@
             }
             return;
         }
-        if (ev.key === 'Escape')
+        if (ev.key === 'Escape') {
+            Voz.callar();
             return irInicio();
+        }
         if (enTexto || revisado)
             return;
         const n = Number(ev.key);

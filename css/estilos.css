@@ -409,6 +409,70 @@ h1, h2, h3 {
   border-color: var(--bleu);
 }
 
+/* botones para oir la palabra */
+.altavoz {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bleu-claro);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: transform .1s ease;
+}
+
+.altavoz:hover {
+  transform: scale(1.06);
+}
+
+.altavoz:active {
+  transform: scale(.95);
+}
+
+.altavoz:focus-visible {
+  outline: 3px solid var(--bleu);
+  outline-offset: 2px;
+}
+
+.oir {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.altavoz.grande {
+  width: 110px;
+  height: 110px;
+  border-radius: 28px;
+  font-size: 2.6rem;
+  color: #fff;
+  background: var(--bleu);
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--bleu) 70%, #000);
+}
+
+.altavoz.lento {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  font-size: 1.6rem;
+}
+
+.interruptor {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  background: var(--hoja);
+  cursor: pointer;
+}
+
+.indicadores {
+  align-items: center;
+}
+
 /* barra de abajo con el boton y el veredicto */
 .pie {
   position: fixed;
