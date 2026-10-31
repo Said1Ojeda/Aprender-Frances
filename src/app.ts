@@ -29,7 +29,7 @@
     const CLAVE = 'allez';
 
     function leerProgreso(): Progreso {
-        const base: Progreso = { unidades: {}, voz: true };
+        const base: Progreso = { unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 } };
         try {
             const guardado = JSON.parse(localStorage.getItem(CLAVE) || '{}');
             return Object.assign(base, guardado);
@@ -42,6 +42,28 @@
 
     function guardar() {
         try { localStorage.setItem(CLAVE, JSON.stringify(progreso)); } catch (e) {}
+    }
+
+    // experiencia, niveles y racha
+
+    const META_DIARIA = 30;
+    const XP_POR_NIVEL = 100;
+
+    const nivel = () => Math.floor(progreso.xp / XP_POR_NIVEL) + 1;
+    const xpDeHoy = () => progreso.xpHoy.dia === Repaso.dia() ? progreso.xpHoy.xp : 0;
+
+    // si ayer no practicaste la racha ya se perdio aunque el numero siga guardado
+    const rachaViva = () => progreso.ultimoDia === Repaso.dia() || progreso.ultimoDia === Repaso.dia(-1) ? progreso.racha : 0;
+
+    // devuelve true si hoy es el primer dia que suma a la racha
+    function sumarDia(xp: number): boolean {
+        const hoy = Repaso.dia();
+        progreso.xp += xp;
+        progreso.xpHoy = { dia: hoy, xp: xpDeHoy() + xp };
+        if (progreso.ultimoDia === hoy) return false;
+        progreso.racha = progreso.ultimoDia === Repaso.dia(-1) ? progreso.racha + 1 : 1;
+        progreso.ultimoDia = hoy;
+        return true;
     }
 
     // pantallas
@@ -98,16 +120,52 @@
             li.appendChild(b);
             return li;
         }));
+        pintarTablero();
+        pintarRepaso();
         pintarIndicadores();
         mostrar('inicio');
     }
 
+    function barra(pct: number, clase = ''): HTMLElement {
+        const b = crear('div', 'barrita ' + clase);
+        const i = crear('i');
+        i.style.width = Math.min(100, Math.round(pct * 100)) + '%';
+        b.appendChild(i);
+        return b;
+    }
+
+    function pintarTablero() {
+        const hoy = xpDeHoy();
+        const racha = rachaViva();
+        const enNivel = progreso.xp % XP_POR_NIVEL;
+
+        const tarjeta = (titulo: string, valor: string, detalle: string, avance?: HTMLElement) => {
+            const t = crear('div', 'marcador');
+            t.append(crear('span', 'marcador-titulo', titulo), crear('b', '', valor));
+            if (avance) t.appendChild(avance);
+            t.appendChild(crear('span', 'marcador-detalle', detalle));
+            return t;
+        };
+
+        $('tablero').replaceChildren(
+            tarjeta('Racha', '🔥 ' + racha + (racha === 1 ? ' día' : ' días'),
+                racha && progreso.ultimoDia !== Repaso.dia() ? 'Practica hoy para no perderla' : racha ? 'Hoy ya cuenta' : 'Haz una lección para empezarla'),
+            tarjeta('Meta de hoy', Math.min(hoy, META_DIARIA) + ' / ' + META_DIARIA + ' XP',
+                hoy >= META_DIARIA ? '¡Cumplida, très bien!' : 'Más o menos dos lecciones', barra(hoy / META_DIARIA, 'meta')),
+            tarjeta('Nivel ' + nivel(), progreso.xp + ' XP',
+                (XP_POR_NIVEL - enNivel) + ' XP para el nivel ' + (nivel() + 1), barra(enNivel / XP_POR_NIVEL)),
+            tarjeta('Aprendidas', String(Repaso.aprendidas(progreso.tarjetas)),
+                'palabras que ya aguantan varios días')
+        );
+    }
+
     function pintarIndicadores() {
-        const hechas = UNIDADES.filter(u => progreso.unidades[u.id]).length;
         const caja = $('indicadores');
-        const t = crear('span', '', hechas + ' / ' + UNIDADES.length);
-        t.title = 'Unidades practicadas';
-        caja.replaceChildren(t);
+        const racha = crear('span', 'chip', '🔥 ' + rachaViva());
+        racha.title = 'Días seguidos practicando';
+        const xp = crear('span', 'chip', '⭐ ' + progreso.xp);
+        xp.title = 'Experiencia total';
+        caja.replaceChildren(racha, xp);
 
         // sin voz en frances no tiene caso el boton
         if (Voz.puedeHablar()) {
@@ -127,6 +185,27 @@
     }
 
     Voz.alCambiar(pintarIndicadores);
+
+    // tarjeta de repaso arriba del camino, solo si hay algo pendiente
+
+    function pintarRepaso() {
+        const caja = $('repaso');
+        const toca = Repaso.pendientes(progreso.tarjetas).length;
+        caja.hidden = toca === 0;
+        if (!toca) return caja.replaceChildren();
+
+        const texto = crear('div', 'repaso-texto');
+        texto.append(
+            crear('b', '', toca === 1 ? 'Tienes 1 palabra para repasar' : 'Tienes ' + toca + ' palabras para repasar'),
+            crear('span', '', 'Repasar justo cuando se te está olvidando es lo que hace que se quede.')
+        );
+        const b = crear('button', 'boton', 'Repasar');
+        b.type = 'button';
+        b.addEventListener('click', empezarRepaso);
+        caja.replaceChildren(texto, b);
+    }
+
+    const unidadDe = (fr: string) => UNIDADES.find(u => u.palabras.some(p => p.fr === fr));
 
     // armado de ejercicios
 
@@ -171,9 +250,14 @@
     }
 
     // hablar cansa, con dos por leccion basta
-    function limitarHablar(lista: Ejercicio[], unidad: Unidad): Ejercicio[] {
+    function limitarHablar(lista: Ejercicio[]): Ejercicio[] {
         let cuantos = 0;
-        return lista.map(e => e.tipo === 'hablar' && ++cuantos > 2 ? ejercicio('inverso', e.palabra, unidad) : e);
+        return lista.map(e => e.tipo === 'hablar' && ++cuantos > 2 ? cambiarA('inverso', e) : e);
+    }
+
+    function cambiarA(tipo: TipoEjercicio, e: Ejercicio): Ejercicio {
+        const u = unidadDe(e.palabra.fr);
+        return u ? ejercicio(tipo, e.palabra, u) : e;
     }
 
     function armarLeccion(unidad: Unidad): Ejercicio[] {
@@ -183,15 +267,16 @@
             const presentar = palabras.map(p => ejercicio('elegir', p, unidad));
             const repasar = revolver(palabras).slice(0, LARGO - presentar.length)
                 .map(p => ejercicio(azar(tiposDeRepaso()), p, unidad));
-            return limitarHablar([...presentar.slice(0, 4), ...repasar.slice(0, 1), ...presentar.slice(4), ...repasar.slice(1)], unidad);
+            return limitarHablar([...presentar.slice(0, 4), ...repasar.slice(0, 1), ...presentar.slice(4), ...repasar.slice(1)]);
         }
-        return limitarHablar(palabras.map(p => ejercicio(azar<TipoEjercicio>(['elegir', ...tiposDeRepaso()]), p, unidad)), unidad);
+        return limitarHablar(palabras.map(p => ejercicio(azar<TipoEjercicio>(['elegir', ...tiposDeRepaso()]), p, unidad)));
     }
 
     // leccion
 
     interface Sesion {
-        unidad: Unidad;
+        // en el repaso la leccion mezcla unidades y no hay una sola
+        unidad: Unidad | null;
         cola: Ejercicio[];
         total: number;
         hechos: number;
@@ -211,7 +296,20 @@
     const veredicto = $('veredicto');
 
     function empezar(unidad: Unidad) {
-        const cola = armarLeccion(unidad);
+        arrancar(unidad, armarLeccion(unidad));
+    }
+
+    function empezarRepaso() {
+        const cola: Ejercicio[] = [];
+        for (const fr of Repaso.pendientes(progreso.tarjetas).slice(0, LARGO)) {
+            const u = unidadDe(fr);
+            const p = u?.palabras.find(x => x.fr === fr);
+            if (u && p) cola.push(ejercicio(azar<TipoEjercicio>(['elegir', ...tiposDeRepaso()]), p, u));
+        }
+        if (cola.length) arrancar(null, limitarHablar(cola));
+    }
+
+    function arrancar(unidad: Unidad | null, cola: Ejercicio[]) {
         sesion = { unidad, cola, total: cola.length, hechos: 0, aciertos: 0, intentos: 0, repetidos: new Set() };
         mostrar('leccion');
         siguiente();
@@ -387,7 +485,7 @@
     function saltarActual() {
         if (!sesion || !actual) return;
         sesion.hechos++;
-        sesion.cola = sesion.cola.map(e => e.tipo === 'hablar' ? ejercicio('inverso', e.palabra, sesion!.unidad) : e);
+        sesion.cola = sesion.cola.map(e => e.tipo === 'hablar' ? cambiarA('inverso', e) : e);
         siguiente();
     }
 
@@ -463,6 +561,9 @@
         if (area) area.readOnly = true;
         caja.querySelectorAll<HTMLButtonElement>('.microfono, .saltar').forEach(b => b.disabled = true);
 
+        // al repaso solo cuenta el primer intento, el repetido ya va con la respuesta vista
+        if (!sesion.repetidos.has(e)) Repaso.registrar(progreso.tarjetas, e.palabra.fr, r.bien);
+
         if (r.bien) {
             sesion.aciertos++;
             sesion.hechos++;
@@ -495,8 +596,14 @@
         if (!sesion) return;
         const s = sesion;
         const pct = s.intentos ? s.aciertos / s.intentos : 0;
-        const antes = progreso.unidades[s.unidad.id];
-        progreso.unidades[s.unidad.id] = { veces: (antes?.veces ?? 0) + 1, mejor: Math.max(antes?.mejor ?? 0, pct) };
+        // diez por terminar, uno por acierto y cinco extra si no fallaste nada
+        const ganado = 10 + s.aciertos + (pct === 1 ? 5 : 0);
+        const nivelAntes = nivel();
+        const nuevoDia = sumarDia(ganado);
+        if (s.unidad) {
+            const antes = progreso.unidades[s.unidad.id];
+            progreso.unidades[s.unidad.id] = { veces: (antes?.veces ?? 0) + 1, mejor: Math.max(antes?.mejor ?? 0, pct) };
+        }
         guardar();
 
         $('fin-frase').textContent = pct === 1 ? 'Sin un solo error, impecable.' : pct >= .8 ? 'Muy bien, ya casi la dominas.' : 'Vas bien, repítela para afianzar.';
@@ -507,14 +614,23 @@
             return d;
         };
         $('resumen').replaceChildren(
+            dato('+' + ganado, 'XP ganada'),
             dato(Math.round(pct * 100) + '%', 'de aciertos'),
-            dato(String(s.unidad.palabras.length), 'palabras en la unidad')
+            dato('🔥 ' + progreso.racha, progreso.racha === 1 ? 'día de racha' : 'días de racha')
         );
+        const extra: string[] = [];
+        if (nuevoDia && progreso.racha > 1) extra.push('Tu racha sube a ' + progreso.racha + ' días.');
+        if (nivel() > nivelAntes) extra.push('¡Subiste al nivel ' + nivel() + '!');
+        if (xpDeHoy() >= META_DIARIA && xpDeHoy() - ganado < META_DIARIA) extra.push('Cumpliste la meta de hoy.');
+        if (extra.length) $('fin-frase').textContent += ' ' + extra.join(' ');
 
         const tip = $('tip');
-        tip.replaceChildren(crear('b', '', s.unidad.tip.titulo), crear('span', '', s.unidad.tip.texto));
+        if (s.unidad) tip.replaceChildren(crear('b', '', s.unidad.tip.titulo), crear('span', '', s.unidad.tip.texto));
+        else tip.replaceChildren();
+        $('t-fin').textContent = s.unidad ? '¡Lección terminada!' : '¡Repaso terminado!';
         sesion = null;
         actual = null;
+        pintarIndicadores();
         mostrar('fin');
     }
 
