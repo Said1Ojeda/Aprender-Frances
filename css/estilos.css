@@ -409,6 +409,139 @@ h1, h2, h3 {
   border-color: var(--bleu);
 }
 
+/* botones para oir la palabra */
+.altavoz {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bleu-claro);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: transform .1s ease;
+}
+
+.altavoz:hover {
+  transform: scale(1.06);
+}
+
+.altavoz:active {
+  transform: scale(.95);
+}
+
+.altavoz:focus-visible {
+  outline: 3px solid var(--bleu);
+  outline-offset: 2px;
+}
+
+.oir {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.altavoz.grande {
+  width: 110px;
+  height: 110px;
+  border-radius: 28px;
+  font-size: 2.6rem;
+  color: #fff;
+  background: var(--bleu);
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--bleu) 70%, #000);
+}
+
+.altavoz.lento {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  font-size: 1.6rem;
+}
+
+.interruptor {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--linea);
+  border-radius: 10px;
+  background: var(--hoja);
+  cursor: pointer;
+}
+
+.indicadores {
+  align-items: center;
+}
+
+/* microfono para practicar la pronunciacion */
+.microfono {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 26px 16px;
+  border: 2px dashed var(--linea);
+  border-radius: 18px;
+  background: var(--hoja);
+  font-weight: 600;
+  color: var(--tinta-suave);
+  cursor: pointer;
+}
+
+.microfono:hover:not(:disabled) {
+  border-color: var(--bleu);
+  color: var(--tinta);
+}
+
+.microfono-icono {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 2rem;
+  background: var(--bleu-claro);
+}
+
+.microfono.oyendo {
+  border-style: solid;
+  border-color: var(--rouge);
+  color: var(--rouge);
+}
+
+.microfono.oyendo .microfono-icono {
+  background: var(--rouge-claro);
+  animation: late 1s ease-in-out infinite;
+}
+
+@keyframes late {
+  50% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--rouge) 20%, transparent); }
+}
+
+.estado-mic {
+  min-height: 1.5em;
+  margin: 12px 0 4px;
+  color: var(--tinta-suave);
+  text-align: center;
+}
+
+.saltar {
+  display: block;
+  margin: 0 auto;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  color: var(--tinta-suave);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.saltar:disabled {
+  visibility: hidden;
+}
+
 /* barra de abajo con el boton y el veredicto */
 .pie {
   position: fixed;

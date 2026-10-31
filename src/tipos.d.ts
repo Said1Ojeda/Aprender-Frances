@@ -17,7 +17,7 @@ interface Unidad {
     tip: { titulo: string; texto: string };
 }
 
-type TipoEjercicio = 'elegir' | 'inverso' | 'escribir';
+type TipoEjercicio = 'elegir' | 'inverso' | 'escribir' | 'escuchar' | 'hablar';
 
 interface Ejercicio {
     tipo: TipoEjercicio;
@@ -33,4 +33,6 @@ interface AvanceUnidad {
 
 interface Progreso {
     unidades: Record<string, AvanceUnidad>;
+    // si la palabra se pronuncia sola al aparecer
+    voz: boolean;
 }
