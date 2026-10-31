@@ -594,6 +594,11 @@ h1, h2, h3 {
     align-items: stretch;
   }
 
+  /* en el cel la barra de abajo es mas alta y no debe tapar las opciones */
+  #p-leccion {
+    padding-bottom: 240px;
+  }
+
   .boton {
     width: 100%;
   }
