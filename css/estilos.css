@@ -484,6 +484,57 @@ h1, h2, h3 {
   display: none;
 }
 
+.nota-fija {
+  margin-bottom: 12px;
+  color: var(--tinta-suave);
+  font-size: .95rem;
+}
+
+.botones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.botones-fila .boton.suave {
+  margin-top: 0;
+  text-align: center;
+}
+
+/* el input de archivo se esconde y se usa la etiqueta como boton */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.oculto:focus-visible + label,
+label.boton:focus-within {
+  outline: 3px solid var(--sol);
+  outline-offset: 3px;
+}
+
+.borrar {
+  margin-top: 18px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  color: var(--rouge);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.borrar.seguro {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--rouge);
+  color: #fff;
+  text-decoration: none;
+}
+
 /* aviso de repaso pendiente */
 .repaso {
   display: flex;

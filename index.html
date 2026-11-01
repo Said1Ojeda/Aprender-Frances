@@ -84,6 +84,18 @@
         <button class="boton suave" type="button" id="probar-voz">🔊 Probar la voz</button>
         <p class="nota" id="nota-voz"></p>
       </fieldset>
+
+      <fieldset class="ajuste">
+        <legend>Tu progreso</legend>
+        <p class="nota-fija">Para pasarlo a otro cel o compu, descarga el respaldo y cárgalo allá.</p>
+        <div class="botones-fila">
+          <button class="boton suave" type="button" id="descargar">⬇️ Descargar respaldo</button>
+          <label class="boton suave" for="cargar">⬆️ Cargar respaldo</label>
+          <input class="oculto" type="file" id="cargar" accept="application/json,.json">
+        </div>
+        <button class="borrar" type="button" id="borrar">Borrar todo mi progreso</button>
+        <p class="nota" id="nota-progreso" role="status"></p>
+      </fieldset>
     </div>
   </section>
 

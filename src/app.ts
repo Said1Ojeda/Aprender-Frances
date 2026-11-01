@@ -28,8 +28,10 @@
 
     const CLAVE = 'allez';
 
+    const nuevoProgreso = (): Progreso => ({ unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 }, meta: 30, vozLenta: false });
+
     function leerProgreso(): Progreso {
-        const base: Progreso = { unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 }, meta: 30, vozLenta: false };
+        const base = nuevoProgreso();
         try {
             const guardado = JSON.parse(localStorage.getItem(CLAVE) || '{}');
             return Object.assign(base, guardado);
@@ -328,6 +330,7 @@
     const ajLenta = $<HTMLInputElement>('aj-lenta');
 
     function irAjustes() {
+        notaProgreso.textContent = '';
         pintarAjustes();
         mostrar('ajustes');
     }
@@ -364,6 +367,89 @@
         guardar();
     });
     $('probar-voz').addEventListener('click', () => Voz.decir('Bonjour, comment ça va ?'));
+
+    // respaldo en un archivo, asi el progreso no se queda atrapado en un solo navegador
+
+    const notaProgreso = $('nota-progreso');
+
+    $('descargar').addEventListener('click', () => {
+        const archivo = { app: 'allez', version: 1, fecha: new Date().toISOString(), progreso };
+        const url = URL.createObjectURL(new Blob([JSON.stringify(archivo, null, 2)], { type: 'application/json' }));
+        const a = crear('a');
+        a.href = url;
+        a.download = 'allez-progreso-' + Repaso.dia() + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        notaProgreso.textContent = 'Listo, revisa tus descargas.';
+    });
+
+    // se cambia el contenido y no el objeto, asi todo lo que ya lo usa ve lo nuevo
+    function reemplazarProgreso(nuevo: Progreso) {
+        for (const k of Object.keys(progreso)) delete (progreso as unknown as Record<string, unknown>)[k];
+        Object.assign(progreso, nuevo);
+        Voz.velocidad(progreso.vozLenta);
+        guardar();
+    }
+
+    // solo se aceptan las partes que conoce la app y con el tipo correcto
+    function validar(datos: unknown): Progreso | null {
+        if (!datos || typeof datos !== 'object') return null;
+        const crudo = (datos as { progreso?: unknown }).progreso ?? datos;
+        if (!crudo || typeof crudo !== 'object') return null;
+        const p = crudo as Record<string, unknown>;
+        const esObjeto = (v: unknown) => !!v && typeof v === 'object' && !Array.isArray(v);
+        if (!esObjeto(p.unidades) || !esObjeto(p.tarjetas)) return null;
+
+        const base = nuevoProgreso();
+        const r = base as unknown as Record<string, unknown>;
+        for (const k of Object.keys(base)) {
+            if (k in p && typeof p[k] === typeof r[k]) r[k] = p[k];
+        }
+        return base;
+    }
+
+    $<HTMLInputElement>('cargar').addEventListener('change', async ev => {
+        const input = ev.target as HTMLInputElement;
+        const archivo = input.files?.[0];
+        input.value = '';
+        if (!archivo) return;
+        try {
+            const nuevo = validar(JSON.parse(await archivo.text()));
+            if (!nuevo) throw new Error('formato');
+            reemplazarProgreso(nuevo);
+            pintarAjustes();
+            pintarIndicadores();
+            const n = Object.keys(nuevo.unidades).length;
+            notaProgreso.textContent = 'Se cargó tu progreso, ' + nuevo.xp + ' XP y ' + n + (n === 1 ? ' unidad practicada.' : ' unidades practicadas.');
+        } catch (e) {
+            notaProgreso.textContent = 'Ese archivo no es un respaldo de Allez!, no se cambió nada.';
+        }
+    });
+
+    // sin ventanas de confirmar, el primer toque pregunta y el segundo borra
+    let borrarListo = 0;
+    const botonBorrar = $<HTMLButtonElement>('borrar');
+    botonBorrar.addEventListener('click', () => {
+        if (Date.now() > borrarListo) {
+            borrarListo = Date.now() + 4000;
+            botonBorrar.textContent = '¿Seguro? Toca otra vez para borrar todo';
+            botonBorrar.classList.add('seguro');
+            setTimeout(() => {
+                botonBorrar.textContent = 'Borrar todo mi progreso';
+                botonBorrar.classList.remove('seguro');
+            }, 4000);
+            return;
+        }
+        borrarListo = 0;
+        reemplazarProgreso(nuevoProgreso());
+        pintarAjustes();
+        pintarIndicadores();
+        botonBorrar.textContent = 'Borrar todo mi progreso';
+        botonBorrar.classList.remove('seguro');
+        notaProgreso.textContent = 'Listo, empiezas de cero.';
+    });
     Voz.alCambiar(() => { if (document.body.dataset.pantalla === 'ajustes') pintarAjustes(); });
 
     // armado de ejercicios
