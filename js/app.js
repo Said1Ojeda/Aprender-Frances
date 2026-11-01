@@ -201,7 +201,6 @@
         const opciones = tipo === 'escribir' || tipo === 'hablar' ? [] : revolver([palabra[campo], ...distractores(palabra, unidad, campo)]);
         return { tipo, palabra, opciones };
     }
-    // la primera vez cada palabra se presenta para reconocerla y luego se pide al reves
     // si dices que ahora no puedes hablar se dejan de pedir un rato
     let sinMicrofonoHasta = 0;
     const puedeHablarAhora = () => Voz.puedeOir() && Date.now() > sinMicrofonoHasta;
@@ -222,7 +221,32 @@
         const u = unidadDe(e.palabra.fr);
         return u ? ejercicio(tipo, e.palabra, u) : e;
     }
+    // las fichas son las palabras de la frase sin signos, mas unas de otras frases para despistar
+    const fichasDe = (t) => t.replace(/[?!.,¿¡]/g, ' ').split(/\s+/).filter(Boolean);
+    function ejercicioFrase(f, unidad) {
+        const propias = fichasDe(f.fr);
+        const usadas = new Set(propias.map(x => x.toLowerCase()));
+        const otras = [];
+        for (const x of revolver((unidad.frases ?? []).flatMap(o => fichasDe(o.fr)))) {
+            if (otras.length === 3)
+                break;
+            if (usadas.has(x.toLowerCase()))
+                continue;
+            usadas.add(x.toLowerCase());
+            otras.push(x);
+        }
+        return { tipo: 'armar', palabra: { fr: f.fr, es: f.es }, opciones: revolver([...propias, ...otras]) };
+    }
+    // las frases van al final, cuando ya viste las palabras sueltas
+    function conFrases(lista, unidad, cuantas) {
+        const frases = revolver(unidad.frases ?? []).slice(0, cuantas).map(f => ejercicioFrase(f, unidad));
+        return [...lista.slice(0, lista.length - frases.length), ...frases];
+    }
+    // la primera vez cada palabra se presenta para reconocerla y luego se pide al reves
     function armarLeccion(unidad) {
+        return conFrases(armarPalabras(unidad), unidad, progreso.unidades[unidad.id] ? 2 : 1);
+    }
+    function armarPalabras(unidad) {
         const nueva = !progreso.unidades[unidad.id];
         const palabras = revolver(unidad.palabras).slice(0, nueva ? 7 : LARGO);
         if (nueva) {
@@ -289,7 +313,8 @@
         inverso: '¿Cómo se dice en francés?',
         escribir: 'Escríbelo en francés',
         escuchar: '¿Qué escuchaste?',
-        hablar: 'Dilo en voz alta'
+        hablar: 'Dilo en voz alta',
+        armar: 'Arma la frase en francés'
     };
     function botonAltavoz(texto, lento = false) {
         const b = crear('button', 'altavoz' + (lento ? ' lento' : ''), lento ? '🐢' : '🔊');
@@ -326,10 +351,12 @@
             partes.push(...campoEscribir());
         else if (e.tipo === 'hablar')
             partes.push(...campoHablar());
+        else if (e.tipo === 'armar')
+            partes.push(...campoArmar(e));
         else
             partes.push(pintarOpciones(e));
         caja.replaceChildren(...partes);
-        const primero = caja.querySelector('textarea, .opcion');
+        const primero = caja.querySelector('textarea, .opcion, .ficha');
         if (primero && matchMedia('(pointer: fine)').matches)
             primero.focus();
     }
@@ -383,6 +410,45 @@
             acentos.appendChild(b);
         }
         return [area, acentos];
+    }
+    // tocar una ficha la sube a la linea y tocarla otra vez la regresa
+    function campoArmar(e) {
+        const linea = crear('div', 'linea-armar');
+        linea.setAttribute('aria-label', 'Tu frase');
+        const banco = crear('div', 'banco');
+        banco.setAttribute('aria-label', 'Fichas');
+        const puestas = [];
+        const actualizar = () => {
+            respuesta = puestas.map(f => f.dataset.valor).join(' ');
+            boton.disabled = puestas.length === 0;
+            linea.classList.toggle('vacia', puestas.length === 0);
+        };
+        e.opciones.forEach(texto => {
+            const hueco = crear('span', 'hueco');
+            const ficha = crear('button', 'ficha', texto);
+            ficha.type = 'button';
+            ficha.lang = 'fr';
+            ficha.dataset.valor = texto;
+            ficha.addEventListener('click', () => {
+                if (revisado)
+                    return;
+                if (ficha.parentElement === linea) {
+                    puestas.splice(puestas.indexOf(ficha), 1);
+                    hueco.appendChild(ficha);
+                }
+                else {
+                    puestas.push(ficha);
+                    linea.appendChild(ficha);
+                    if (progreso.voz)
+                        Voz.decir(texto);
+                }
+                actualizar();
+            });
+            hueco.appendChild(ficha);
+            banco.appendChild(hueco);
+        });
+        actualizar();
+        return [linea, banco];
     }
     function campoHablar() {
         const mic = crear('button', 'microfono');
@@ -488,9 +554,10 @@
         const e = actual;
         const correcto = e.tipo === 'elegir' ? e.palabra.es : e.palabra.fr;
         Voz.callar();
-        const r = e.tipo === 'escribir' ? revisarEscrito(respuesta, correcto)
-            : e.tipo === 'hablar' ? revisarHablado(oido, correcto)
-                : { bien: respuesta === correcto };
+        const r = e.tipo === 'armar' ? { bien: limpiar(respuesta) === limpiar(correcto) }
+            : e.tipo === 'escribir' ? revisarEscrito(respuesta, correcto)
+                : e.tipo === 'hablar' ? revisarHablado(oido, correcto)
+                    : { bien: respuesta === correcto };
         revisado = true;
         sesion.intentos++;
         caja.querySelectorAll('.opcion').forEach(o => {
@@ -503,9 +570,11 @@
         const area = caja.querySelector('textarea');
         if (area)
             area.readOnly = true;
-        caja.querySelectorAll('.microfono, .saltar').forEach(b => b.disabled = true);
+        caja.querySelectorAll('.microfono, .saltar, .ficha').forEach(b => b.disabled = true);
+        caja.querySelector('.linea-armar')?.classList.add(r.bien ? 'bien' : 'mal');
         // al repaso solo cuenta el primer intento, el repetido ya va con la respuesta vista
-        if (!sesion.repetidos.has(e))
+        // las frases no entran al repaso, ahi solo van palabras
+        if (!sesion.repetidos.has(e) && e.tipo !== 'armar')
             Repaso.registrar(progreso.tarjetas, e.palabra.fr, r.bien);
         if (r.bien) {
             sesion.aciertos++;
@@ -599,7 +668,7 @@
             Voz.callar();
             return irInicio();
         }
-        if (enTexto || revisado)
+        if (enTexto || revisado || actual.tipo === 'armar')
             return;
         const n = Number(ev.key);
         if (n >= 1 && n <= actual.opciones.length)

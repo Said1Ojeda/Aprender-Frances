@@ -23,6 +23,11 @@ const UNIDADES = [
             { fr: 'comment ça va ?', es: '¿cómo estás?', pista: 'ko-mán sa va' },
             { fr: 'ça va bien', es: 'estoy bien', pista: 'sa va bián' }
         ],
+        frases: [
+            { fr: "Bonjour, je m'appelle Ana", es: 'Hola, me llamo Ana' },
+            { fr: 'Merci beaucoup, au revoir', es: 'Muchas gracias, adiós' },
+            { fr: 'Ça va bien, merci', es: 'Estoy bien, gracias' }
+        ],
         tip: {
             titulo: 'Bonsoir no es bonne nuit',
             texto: 'Bonsoir se dice al llegar a un lugar en la noche. Bonne nuit es solo para cuando alguien se va a dormir, como nuestro "que descanses".'

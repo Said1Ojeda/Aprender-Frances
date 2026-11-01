@@ -126,7 +126,8 @@ h1, h2, h3 {
 
 .pantalla.activa {
   display: block;
-  animation: entra .35s ease both;
+  /* backwards y no both, si la animacion se queda aplicada la barra fija de abajo se sale de su lugar */
+  animation: entra .35s ease backwards;
 }
 
 @keyframes entra {
@@ -575,6 +576,71 @@ h1, h2, h3 {
 
 .indicadores {
   align-items: center;
+}
+
+/* armar la frase con fichas */
+.linea-armar {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  min-height: 112px;
+  padding: 12px 4px;
+  margin-bottom: 22px;
+  border-bottom: 2px solid var(--linea);
+}
+
+.linea-armar.bien {
+  border-color: var(--vert);
+}
+
+.linea-armar.mal {
+  border-color: var(--rouge);
+}
+
+.banco {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* el hueco guarda el lugar de la ficha para que el banco no se mueva */
+.hueco {
+  display: inline-flex;
+  min-width: 48px;
+  min-height: 46px;
+  border-radius: 12px;
+  background: var(--linea);
+}
+
+.ficha {
+  padding: 10px 16px;
+  border: 2px solid var(--linea);
+  border-bottom-width: 4px;
+  border-radius: 12px;
+  background: var(--hoja);
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .08s ease;
+}
+
+.ficha:hover:not(:disabled) {
+  border-color: var(--bleu);
+}
+
+.ficha:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.ficha:focus-visible {
+  outline: 3px solid var(--bleu);
+  outline-offset: 2px;
+}
+
+.ficha:disabled {
+  cursor: default;
 }
 
 /* microfono para practicar la pronunciacion */
