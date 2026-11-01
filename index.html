@@ -44,8 +44,22 @@
         <p class="bajada">Lecciones de cinco minutos pensadas para quien habla español. Empieza por arriba y ve desbloqueando.</p>
       </div>
       <div class="tablero" id="tablero"></div>
+      <div class="accesos">
+        <button class="boton suave" type="button" data-ir="palabras">📖 Mis palabras</button>
+      </div>
       <div class="repaso" id="repaso" hidden></div>
       <ol class="camino" id="camino"></ol>
+    </div>
+  </section>
+
+  <!-- todas las palabras con buscador -->
+  <section class="pantalla" id="p-palabras" aria-labelledby="t-palabras">
+    <div class="envoltura angosta">
+      <button class="volver" type="button" data-ir="inicio">← Volver</button>
+      <h2 class="titulo-pantalla" id="t-palabras">Mis palabras</h2>
+      <p class="bajada" id="palabras-resumen"></p>
+      <input class="buscar" type="search" id="buscar" placeholder="Busca en español o en francés" aria-label="Buscar palabra" autocomplete="off">
+      <div id="lista-palabras"></div>
     </div>
   </section>
 
