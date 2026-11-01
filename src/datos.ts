@@ -199,5 +199,32 @@ const UNIDADES: Unidad[] = [
             titulo: 'Embarazada y embarrassé',
             texto: 'El clásico, si dices je suis embarrassée no estás embarazada, estás apenada. Embarazada se dice enceinte. Ante la duda, mejor pregunta antes de usarla.'
         }
+    },
+    {
+        id: 'dias-meses',
+        titulo: 'Días y meses',
+        tituloFr: 'Les jours et les mois',
+        descripcion: 'Los días de la semana, algunos meses y hablar de hoy y mañana.',
+        color: '#4F7A28',
+        palabras: [
+            { fr: 'lundi', es: 'lunes', pista: 'lan-dí' },
+            { fr: 'mardi', es: 'martes', pista: 'mar-dí' },
+            { fr: 'mercredi', es: 'miércoles', pista: 'mer-kre-dí' },
+            { fr: 'jeudi', es: 'jueves', pista: 'yö-dí' },
+            { fr: 'vendredi', es: 'viernes', pista: 'van-dre-dí' },
+            { fr: 'samedi', es: 'sábado', pista: 'sam-dí' },
+            { fr: 'dimanche', es: 'domingo', pista: 'di-mansh' },
+            { fr: "aujourd'hui", es: 'hoy', pista: 'o-yur-duí' },
+            { fr: 'demain', es: 'mañana', pista: 'dö-man' },
+            { fr: 'hier', es: 'ayer', pista: 'iér' },
+            { fr: 'la semaine', es: 'la semana', pista: 'la sö-mén' },
+            { fr: 'janvier', es: 'enero', pista: 'yan-vié' },
+            { fr: 'juillet', es: 'julio', pista: 'yui-yé' },
+            { fr: 'décembre', es: 'diciembre', pista: 'de-sambr' }
+        ],
+        tip: {
+            titulo: 'Sin mayúscula y con le para lo que se repite',
+            texto: 'Los días y los meses van en minúscula, igual que en español. Si dices le lundi es los lunes, algo que pasa cada semana, y lundi solito es este lunes.'
+        }
     }
 ];

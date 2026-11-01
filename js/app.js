@@ -435,7 +435,7 @@
     }
     let oido = [];
     // revision de respuestas
-    const sinAcentos = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const sinAcentos = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     function limpiar(t) {
         return t.toLowerCase()
             .replace(/[’`´]/g, "'")

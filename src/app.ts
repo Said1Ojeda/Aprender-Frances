@@ -493,7 +493,7 @@
 
     // revision de respuestas
 
-    const sinAcentos = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const sinAcentos = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
     function limpiar(t: string): string {
         return t.toLowerCase()
