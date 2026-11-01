@@ -226,5 +226,30 @@ const UNIDADES: Unidad[] = [
             titulo: 'Sin mayúscula y con le para lo que se repite',
             texto: 'Los días y los meses van en minúscula, igual que en español. Si dices le lundi es los lunes, algo que pasa cada semana, y lundi solito es este lunes.'
         }
+    },
+    {
+        id: 'ropa',
+        titulo: 'La ropa',
+        tituloFr: 'Les vêtements',
+        descripcion: 'Lo que te pones todos los días y cómo decir qué llevas puesto.',
+        color: '#B5458F',
+        palabras: [
+            { fr: 'la chemise', es: 'la camisa', pista: 'la shö-mís' },
+            { fr: 'le pantalon', es: 'el pantalón', pista: 'lö pan-ta-lón' },
+            { fr: 'la jupe', es: 'la falda', pista: 'la yüp' },
+            { fr: 'le pull', es: 'el suéter', pista: 'lö pül' },
+            { fr: 'la veste', es: 'la chaqueta', pista: 'la vest' },
+            { fr: 'le manteau', es: 'el abrigo', pista: 'lö man-tó' },
+            { fr: 'les chaussures', es: 'los zapatos', pista: 'le sho-sür' },
+            { fr: 'les chaussettes', es: 'los calcetines', pista: 'le sho-sét' },
+            { fr: 'le chapeau', es: 'el sombrero', pista: 'lö sha-pó' },
+            { fr: 'la casquette', es: 'la gorra', pista: 'la kas-két' },
+            { fr: 'le t-shirt', es: 'la playera', pista: 'lö ti-shört' },
+            { fr: 'je porte', es: 'llevo puesto', pista: 'yö port' }
+        ],
+        tip: {
+            titulo: 'Chaussures y chaussettes',
+            texto: 'Se parecen mucho, chaussures son los zapatos y chaussettes los calcetines. Para decir qué llevas puesto se usa porter, je porte une veste es llevo una chaqueta.'
+        }
     }
 ];
