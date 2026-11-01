@@ -1278,9 +1278,34 @@ label.boton:focus-within {
   margin-bottom: 4px;
 }
 
+/* el confeti va encima de todo y no estorba los toques */
+.confeti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  pointer-events: none;
+}
+
 @media (max-width: 640px) {
   .camino {
     grid-template-columns: 1fr;
+  }
+
+  .resumen {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .resumen .dato {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 8px;
+  }
+
+  .resumen .dato b {
+    font-size: 1.4rem;
   }
 
   .opciones {

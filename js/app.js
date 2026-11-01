@@ -904,6 +904,10 @@
             extra.push('Cumpliste la meta de hoy.');
         if (extra.length)
             $('fin-frase').textContent += ' ' + extra.join(' ');
+        // se festeja lo que cuesta, no cada leccion, si no pierde chiste
+        const festejo = pct === 1 || nivel() > nivelAntes || medallas.length > 0;
+        if (festejo)
+            setTimeout(() => Confeti.lanzar(pct === 1 && medallas.length ? 180 : 120), 350);
         const tip = $('tip');
         if (s.unidad)
             tip.replaceChildren(crear('b', '', s.unidad.tip.titulo), crear('span', '', s.unidad.tip.texto));

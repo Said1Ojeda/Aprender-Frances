@@ -8,12 +8,15 @@ Francés básico desde cero, pensado para quien habla español. Lecciones de cin
 
 ## Qué trae
 
-- **8 unidades del nivel A1** con 94 palabras y frases: saludos, números, colores, familia, comida, los verbos *être* y *avoir*, frases para viajar y falsos amigos
-- **Cinco tipos de ejercicio**: reconocer la palabra, traducir al francés, escribirla, escucharla y decirla en voz alta
+- **10 unidades del nivel A1** con 120 palabras y 30 frases: saludos, números, colores, familia, comida, los verbos *être* y *avoir*, frases para viajar, falsos amigos, días y meses, y ropa
+- **Seis tipos de ejercicio**: reconocer la palabra, traducir al francés, escribirla, escucharla, decirla en voz alta y armar la frase con fichas
 - **Voz en francés** con la que trae el navegador, también se puede oír despacio
 - **Micrófono** para practicar la pronunciación, la app te dice qué entendió
 - **Repaso espaciado** con cajas, como las tarjetas de Anki. Lo que fallas regresa pronto y lo que ya sabes se va espaciando
-- **Racha diaria, experiencia y niveles**, con una meta de 30 XP al día
+- **Racha diaria, experiencia y niveles**, con la meta del día a tu gusto
+- **12 medallas** por racha, lecciones sin errores, unidades y palabras aprendidas, con confeti cuando ganas algo
+- **Mis palabras**: todas las palabras con buscador, audio y cómo vas con cada una
+- **Respaldo del progreso** en un archivo para pasarlo a otro cel o compu
 - **Un tip por unidad** con lo que más confunde a un hispanohablante, como que *embarrassée* no es embarazada
 - **Se instala como app** y funciona sin internet después de la primera visita
 - **Modo oscuro** automático y se puede usar solo con el teclado
@@ -31,7 +34,9 @@ src/tipos.d.ts     tipos de las unidades, ejercicios y progreso
 src/datos.ts       las ocho unidades con sus palabras y tips
 src/voz.ts         pronunciación y reconocimiento de voz del navegador
 src/repaso.ts      repaso espaciado por cajas
-src/app.ts         lecciones, revisión de respuestas, racha y experiencia
+src/medallas.ts    qué pide cada medalla
+src/confeti.ts     el festejo en un canvas
+src/app.ts         lecciones, revisión de respuestas, racha, ajustes y respaldo
 sw.js              guarda la app para usarla sin internet
 js/                lo compilado, no se edita a mano
 ```
@@ -39,7 +44,8 @@ js/                lo compilado, no se edita a mano
 - **Respuestas escritas con criterio.** No importan las mayúsculas ni los signos. Si solo te falta un acento o tienes un error de dedo se cuenta bien, pero te enseña cómo se escribe.
 - **La pronunciación se compara con todo lo que entendió el navegador**, no solo con la primera opción, así un acento todavía no muy francés no te castiga de más.
 - **Lo que fallas regresa al final de la lección** una vez, y el repaso solo cuenta tu primer intento.
-- **Todo el progreso se guarda en tu navegador.** No hay servidor ni cuenta.
+- **Todo el progreso se guarda en tu navegador.** No hay servidor ni cuenta. Desde Ajustes se descarga un respaldo, y al cargarlo solo se aceptan los datos que la app conoce.
+- **El confeti respeta la opción de reducir movimiento** del sistema, igual que el resto de animaciones.
 
 La voz y el micrófono dependen del navegador. En Chrome, Edge y Safari funcionan las dos cosas. Si tu navegador no trae voz en francés, esos ejercicios no aparecen.
 

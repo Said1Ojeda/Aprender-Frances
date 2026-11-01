@@ -1,6 +1,6 @@
 // guarda la app en el cel para que funcione sin internet
 // cambia la version cuando se suban archivos nuevos, asi se borra lo viejo
-const VERSION = 'allez-v1';
+const VERSION = 'allez-v2';
 
 const ARCHIVOS = [
   './',
@@ -9,6 +9,8 @@ const ARCHIVOS = [
   'js/datos.js',
   'js/voz.js',
   'js/repaso.js',
+  'js/medallas.js',
+  'js/confeti.js',
   'js/app.js',
   'manifest.webmanifest',
   'iconos/icono.svg',
