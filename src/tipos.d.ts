@@ -7,6 +7,12 @@ interface Palabra {
     pista?: string;
 }
 
+// una oracion completa para armar con fichas
+interface Frase {
+    fr: string;
+    es: string;
+}
+
 interface Unidad {
     id: string;
     titulo: string;
@@ -14,14 +20,16 @@ interface Unidad {
     descripcion: string;
     color: string;
     palabras: Palabra[];
+    frases?: Frase[];
     tip: { titulo: string; texto: string };
 }
 
-type TipoEjercicio = 'elegir' | 'inverso' | 'escribir' | 'escuchar' | 'hablar';
+type TipoEjercicio = 'elegir' | 'inverso' | 'escribir' | 'escuchar' | 'hablar' | 'armar';
 
 interface Ejercicio {
     tipo: TipoEjercicio;
     palabra: Palabra;
+    // en armar son las fichas revueltas, en los demas las respuestas para escoger
     opciones: string[];
 }
 

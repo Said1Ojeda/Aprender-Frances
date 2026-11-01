@@ -23,6 +23,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'comment ça va ?', es: '¿cómo estás?', pista: 'ko-mán sa va' },
             { fr: 'ça va bien', es: 'estoy bien', pista: 'sa va bián' }
         ],
+        frases: [
+            { fr: "Bonjour, je m'appelle Ana", es: 'Hola, me llamo Ana' },
+            { fr: 'Merci beaucoup, au revoir', es: 'Muchas gracias, adiós' },
+            { fr: 'Ça va bien, merci', es: 'Estoy bien, gracias' }
+        ],
         tip: {
             titulo: 'Bonsoir no es bonne nuit',
             texto: 'Bonsoir se dice al llegar a un lugar en la noche. Bonne nuit es solo para cuando alguien se va a dormir, como nuestro "que descanses".'
@@ -48,6 +53,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'vingt', es: 'veinte', pista: 'van' },
             { fr: 'cent', es: 'cien', pista: 'san' }
         ],
+        frases: [
+            { fr: "J'ai deux frères", es: 'Tengo dos hermanos' },
+            { fr: 'Il y a trois pommes', es: 'Hay tres manzanas' },
+            { fr: 'Le café coûte cinq euros', es: 'El café cuesta cinco euros' }
+        ],
         tip: {
             titulo: 'El francés cuenta raro después del 60',
             texto: '70 es soixante-dix, sesenta y diez. 80 es quatre-vingts, cuatro veintes. 90 es quatre-vingt-dix, cuatro veintes y diez. En Bélgica y Suiza dicen septante y nonante, mucho más fácil.'
@@ -71,6 +81,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'gris', es: 'gris', pista: 'grí' },
             { fr: 'violet', es: 'morado', pista: 'vio-lé' },
             { fr: 'marron', es: 'café, el color', pista: 'ma-rón' }
+        ],
+        frases: [
+            { fr: 'Le chat est noir', es: 'El gato es negro' },
+            { fr: "J'aime le bleu", es: 'Me gusta el azul' },
+            { fr: 'Une voiture rouge', es: 'Un carro rojo' }
         ],
         tip: {
             titulo: 'El color va después y cambia con el femenino',
@@ -97,6 +112,11 @@ const UNIDADES: Unidad[] = [
             { fr: "l'amie", es: 'la amiga', pista: 'la-mí' },
             { fr: 'la femme', es: 'la esposa / la mujer', pista: 'la fam' }
         ],
+        frases: [
+            { fr: "Ma mère s'appelle Rosa", es: 'Mi mamá se llama Rosa' },
+            { fr: "J'ai une sœur", es: 'Tengo una hermana' },
+            { fr: 'Mon père est grand', es: 'Mi papá es alto' }
+        ],
         tip: {
             titulo: 'Le, la, l y les',
             texto: 'Le es el, la es la y les es los o las. Si la palabra empieza con vocal se junta, l\'ami. Fille sirve para hija y también para muchacha, depende de la frase.'
@@ -121,6 +141,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'le gâteau', es: 'el pastel', pista: 'lö ga-tó' },
             { fr: 'je voudrais un café', es: 'quisiera un café', pista: 'yö vu-dré an ka-fé' },
             { fr: "l'addition, s'il vous plaît", es: 'la cuenta, por favor', pista: 'la-di-sión sil vu plé' }
+        ],
+        frases: [
+            { fr: 'Je voudrais du pain', es: 'Quisiera pan' },
+            { fr: 'Le fromage est très bon', es: 'El queso está muy bueno' },
+            { fr: "Un café au lait, s'il vous plaît", es: 'Un café con leche, por favor' }
         ],
         tip: {
             titulo: 'Je voudrais, la palabra mágica',
@@ -147,6 +172,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'vous avez', es: 'ustedes tienen', pista: 'vu-sa-vé' },
             { fr: 'ils ont', es: 'ellos tienen', pista: 'il-són, con z' }
         ],
+        frases: [
+            { fr: 'Je suis fatigué', es: 'Estoy cansado' },
+            { fr: 'Nous avons faim', es: 'Tenemos hambre' },
+            { fr: 'Elle a vingt ans', es: 'Ella tiene veinte años' }
+        ],
         tip: {
             titulo: 'En francés la edad y el hambre se tienen',
             texto: 'Être sirve para ser y estar. Para la edad se usa avoir, j\'ai vingt ans es tengo veinte años, y lo mismo con j\'ai faim, tengo hambre. Cuidado con ils sont, que suena con s, e ils ont, que suena con z.'
@@ -172,6 +202,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'je ne comprends pas', es: 'no entiendo', pista: 'yö nö kom-prán pa' },
             { fr: 'parlez-vous espagnol ?', es: '¿habla español?', pista: 'par-lé vu es-pa-ñól' }
         ],
+        frases: [
+            { fr: 'Où est la gare ?', es: '¿Dónde está la estación?' },
+            { fr: "L'hôtel est à droite", es: 'El hotel está a la derecha' },
+            { fr: 'Je voudrais un billet', es: 'Quisiera un boleto' }
+        ],
         tip: {
             titulo: 'La h no suena y casi nunca la s final',
             texto: 'Hôtel se dice otél, igual que en español la h es muda. Muchas letras del final tampoco suenan, por eso toilettes suena tualét y comprends suena komprán.'
@@ -194,6 +229,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'constipé', es: 'resfriado, no estreñido', pista: 'kons-ti-pé' },
             { fr: 'le crayon', es: 'el lápiz, no crayón', pista: 'lö kre-yón' },
             { fr: 'la cave', es: 'el sótano, no cueva', pista: 'la kav' }
+        ],
+        frases: [
+            { fr: "J'attends le bus", es: 'Espero el bus' },
+            { fr: 'Je reste à la maison', es: 'Me quedo en la casa' },
+            { fr: 'La robe est sale', es: 'El vestido está sucio' }
         ],
         tip: {
             titulo: 'Embarazada y embarrassé',
@@ -222,6 +262,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'juillet', es: 'julio', pista: 'yui-yé' },
             { fr: 'décembre', es: 'diciembre', pista: 'de-sambr' }
         ],
+        frases: [
+            { fr: "Aujourd'hui c'est lundi", es: 'Hoy es lunes' },
+            { fr: 'À demain', es: 'Hasta mañana' },
+            { fr: 'Je travaille le samedi', es: 'Trabajo los sábados' }
+        ],
         tip: {
             titulo: 'Sin mayúscula y con le para lo que se repite',
             texto: 'Los días y los meses van en minúscula, igual que en español. Si dices le lundi es los lunes, algo que pasa cada semana, y lundi solito es este lunes.'
@@ -246,6 +291,11 @@ const UNIDADES: Unidad[] = [
             { fr: 'la casquette', es: 'la gorra', pista: 'la kas-két' },
             { fr: 'le t-shirt', es: 'la playera', pista: 'lö ti-shört' },
             { fr: 'je porte', es: 'llevo puesto', pista: 'yö port' }
+        ],
+        frases: [
+            { fr: 'Je porte une chemise blanche', es: 'Llevo una camisa blanca' },
+            { fr: 'Où sont mes chaussures ?', es: '¿Dónde están mis zapatos?' },
+            { fr: 'Le pull est trop grand', es: 'El suéter es demasiado grande' }
         ],
         tip: {
             titulo: 'Chaussures y chaussettes',
