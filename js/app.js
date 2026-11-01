@@ -27,7 +27,7 @@
     // progreso guardado
     const CLAVE = 'allez';
     function leerProgreso() {
-        const base = { unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 } };
+        const base = { unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 }, meta: 30, vozLenta: false };
         try {
             const guardado = JSON.parse(localStorage.getItem(CLAVE) || '{}');
             return Object.assign(base, guardado);
@@ -37,6 +37,7 @@
         }
     }
     const progreso = leerProgreso();
+    Voz.velocidad(progreso.vozLenta);
     function guardar() {
         try {
             localStorage.setItem(CLAVE, JSON.stringify(progreso));
@@ -44,8 +45,15 @@
         catch (e) { }
     }
     // experiencia, niveles y racha
-    const META_DIARIA = 30;
     const XP_POR_NIVEL = 100;
+    // una leccion da entre 10 y 25 xp, con 18 se calcula mas o menos cuantas faltan
+    const METAS = [
+        { xp: 10, nombre: 'Relajada', detalle: 'Una lección corta' },
+        { xp: 30, nombre: 'Normal', detalle: 'Unas dos lecciones' },
+        { xp: 50, nombre: 'En serio', detalle: 'Unas tres lecciones' },
+        { xp: 80, nombre: 'Intensa', detalle: 'Cuatro o cinco lecciones' }
+    ];
+    const meta = () => progreso.meta || 30;
     const nivel = () => Math.floor(progreso.xp / XP_POR_NIVEL) + 1;
     const xpDeHoy = () => progreso.xpHoy.dia === Repaso.dia() ? progreso.xpHoy.xp : 0;
     // si ayer no practicaste la racha ya se perdio aunque el numero siga guardado
@@ -71,6 +79,8 @@
             irInicio();
         else if (b.dataset.ir === 'palabras')
             irPalabras();
+        else if (b.dataset.ir === 'ajustes')
+            irAjustes();
     }));
     // inicio
     const desbloqueada = (i) => i === 0 || (progreso.unidades[UNIDADES[i - 1].id]?.veces ?? 0) > 0;
@@ -130,7 +140,11 @@
             t.appendChild(crear('span', 'marcador-detalle', detalle));
             return t;
         };
-        $('tablero').replaceChildren(tarjeta('Racha', '🔥 ' + racha + (racha === 1 ? ' día' : ' días'), racha && progreso.ultimoDia !== Repaso.dia() ? 'Practica hoy para no perderla' : racha ? 'Hoy ya cuenta' : 'Haz una lección para empezarla'), tarjeta('Meta de hoy', Math.min(hoy, META_DIARIA) + ' / ' + META_DIARIA + ' XP', hoy >= META_DIARIA ? '¡Cumplida, très bien!' : 'Más o menos dos lecciones', barra(hoy / META_DIARIA, 'meta')), tarjeta('Nivel ' + nivel(), progreso.xp + ' XP', (XP_POR_NIVEL - enNivel) + ' XP para el nivel ' + (nivel() + 1), barra(enNivel / XP_POR_NIVEL)), tarjeta('Aprendidas', String(Repaso.aprendidas(progreso.tarjetas)), 'palabras que ya aguantan varios días'));
+        $('tablero').replaceChildren(tarjeta('Racha', '🔥 ' + racha + (racha === 1 ? ' día' : ' días'), racha && progreso.ultimoDia !== Repaso.dia() ? 'Practica hoy para no perderla' : racha ? 'Hoy ya cuenta' : 'Haz una lección para empezarla'), tarjeta('Meta de hoy', Math.min(hoy, meta()) + ' / ' + meta() + ' XP', hoy >= meta() ? '¡Cumplida, très bien!' : faltan(meta() - hoy), barra(hoy / meta(), 'meta')), tarjeta('Nivel ' + nivel(), progreso.xp + ' XP', (XP_POR_NIVEL - enNivel) + ' XP para el nivel ' + (nivel() + 1), barra(enNivel / XP_POR_NIVEL)), tarjeta('Aprendidas', String(Repaso.aprendidas(progreso.tarjetas)), 'palabras que ya aguantan varios días'));
+    }
+    function faltan(xp) {
+        const lecciones = Math.ceil(xp / 18);
+        return lecciones === 1 ? 'Te falta una lección' : 'Te faltan unas ' + lecciones + ' lecciones';
     }
     function pintarIndicadores() {
         const caja = $('indicadores');
@@ -264,6 +278,46 @@
         clearTimeout(esperaBuscar);
         esperaBuscar = window.setTimeout(pintarPalabras, 120);
     });
+    // ajustes
+    const ajVoz = $('aj-voz');
+    const ajLenta = $('aj-lenta');
+    function irAjustes() {
+        pintarAjustes();
+        mostrar('ajustes');
+    }
+    function pintarAjustes() {
+        $('metas').replaceChildren(...METAS.map(m => {
+            const b = crear('button', 'meta-opcion');
+            b.type = 'button';
+            b.setAttribute('aria-pressed', String(meta() === m.xp));
+            b.append(crear('b', '', m.nombre), crear('span', '', m.xp + ' XP'), crear('small', '', m.detalle));
+            b.addEventListener('click', () => {
+                progreso.meta = m.xp;
+                guardar();
+                pintarAjustes();
+            });
+            return b;
+        }));
+        ajVoz.checked = progreso.voz;
+        ajLenta.checked = progreso.vozLenta;
+        const hay = Voz.puedeHablar();
+        ajVoz.disabled = ajLenta.disabled = !hay;
+        $('probar-voz').disabled = !hay;
+        $('nota-voz').textContent = hay ? '' : 'Este navegador no trae voz en francés. Prueba con Chrome, Edge o Safari.';
+    }
+    ajVoz.addEventListener('change', () => {
+        progreso.voz = ajVoz.checked;
+        guardar();
+        pintarIndicadores();
+    });
+    ajLenta.addEventListener('change', () => {
+        progreso.vozLenta = ajLenta.checked;
+        Voz.velocidad(progreso.vozLenta);
+        guardar();
+    });
+    $('probar-voz').addEventListener('click', () => Voz.decir('Bonjour, comment ça va ?'));
+    Voz.alCambiar(() => { if (document.body.dataset.pantalla === 'ajustes')
+        pintarAjustes(); });
     // armado de ejercicios
     const LARGO = 10;
     const MAX_ESCRIBIR = 22;
@@ -724,7 +778,7 @@
             extra.push('Tu racha sube a ' + progreso.racha + ' días.');
         if (nivel() > nivelAntes)
             extra.push('¡Subiste al nivel ' + nivel() + '!');
-        if (xpDeHoy() >= META_DIARIA && xpDeHoy() - ganado < META_DIARIA)
+        if (xpDeHoy() >= meta() && xpDeHoy() - ganado < meta())
             extra.push('Cumpliste la meta de hoy.');
         if (extra.length)
             $('fin-frase').textContent += ' ' + extra.join(' ');
