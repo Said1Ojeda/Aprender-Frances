@@ -280,6 +280,60 @@ h1, h2, h3 {
   border-color: var(--bleu);
 }
 
+.filtros {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+
+.filtro {
+  flex: none;
+  padding: 7px 14px;
+  border: 1px solid var(--linea);
+  border-radius: 99px;
+  background: var(--hoja);
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+  cursor: pointer;
+}
+
+.filtro[aria-pressed="true"] {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.filtro:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.insignia {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.insignia.aprendiendo {
+  background: var(--sol-claro);
+  color: color-mix(in srgb, var(--sol) 55%, var(--tinta));
+}
+
+.insignia.aprendida {
+  background: var(--vert-claro);
+  color: var(--vert);
+}
+
+.insignia.repasar {
+  background: var(--rouge-claro);
+  color: var(--rouge);
+}
+
 .grupo-palabras {
   margin-top: 26px;
 }
