@@ -55,4 +55,7 @@ interface Progreso {
     racha: number;
     ultimoDia: string;
     xpHoy: { dia: string; xp: number };
+    // xp que pide la meta de cada dia
+    meta: number;
+    vozLenta: boolean;
 }

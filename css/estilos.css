@@ -409,6 +409,132 @@ h1, h2, h3 {
   text-align: center;
 }
 
+/* ajustes */
+.ajuste {
+  margin-top: 26px;
+  padding: 20px;
+  border: 1px solid var(--linea);
+  border-radius: 16px;
+  background: var(--hoja);
+}
+
+.ajuste legend {
+  padding: 0 6px;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.metas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.meta-opcion {
+  display: grid;
+  gap: 2px;
+  padding: 14px;
+  border: 2px solid var(--linea);
+  border-radius: 14px;
+  background: var(--papel);
+  text-align: left;
+  cursor: pointer;
+}
+
+.meta-opcion[aria-pressed="true"] {
+  border-color: var(--bleu);
+  background: var(--bleu-claro);
+}
+
+.meta-opcion span {
+  font-weight: 700;
+  color: var(--bleu);
+}
+
+.meta-opcion small {
+  color: var(--tinta-suave);
+}
+
+.interruptor-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.interruptor-fila input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--bleu);
+}
+
+.ajuste .boton.suave {
+  margin-top: 10px;
+}
+
+.nota {
+  margin-top: 10px;
+  color: var(--tinta-suave);
+  font-size: .9rem;
+}
+
+.nota:empty {
+  display: none;
+}
+
+.nota-fija {
+  margin-bottom: 12px;
+  color: var(--tinta-suave);
+  font-size: .95rem;
+}
+
+.botones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.botones-fila .boton.suave {
+  margin-top: 0;
+  text-align: center;
+}
+
+/* el input de archivo se esconde y se usa la etiqueta como boton */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.oculto:focus-visible + label,
+label.boton:focus-within {
+  outline: 3px solid var(--sol);
+  outline-offset: 3px;
+}
+
+.borrar {
+  margin-top: 18px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  color: var(--rouge);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.borrar.seguro {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--rouge);
+  color: #fff;
+  text-decoration: none;
+}
+
 /* aviso de repaso pendiente */
 .repaso {
   display: flex;

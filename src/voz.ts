@@ -27,6 +27,10 @@ const Voz = (() => {
         return voz !== null;
     }
 
+    // con la voz lenta todo se dice mas despacio, y el boton de la tortuga todavia mas
+    let base = .92;
+    const velocidad = (lenta: boolean) => { base = lenta ? .75 : .92; };
+
     function decir(texto: string, lento = false): Promise<void> {
         return new Promise(listo => {
             if (!voz) return listo();
@@ -34,7 +38,7 @@ const Voz = (() => {
             const u = new SpeechSynthesisUtterance(texto);
             u.voice = voz;
             u.lang = voz.lang;
-            u.rate = lento ? .6 : .92;
+            u.rate = lento ? base * .65 : base;
             u.onend = () => listo();
             u.onerror = () => listo();
             speechSynthesis.speak(u);
@@ -96,5 +100,5 @@ const Voz = (() => {
         oyendo = null;
     }
 
-    return { puedeHablar, decir, callar, puedeOir, oir, dejarDeOir, alCambiar: (f: () => void) => oyentes.push(f) };
+    return { puedeHablar, decir, callar, velocidad, puedeOir, oir, dejarDeOir, alCambiar: (f: () => void) => oyentes.push(f) };
 })();

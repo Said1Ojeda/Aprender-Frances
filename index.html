@@ -46,6 +46,7 @@
       <div class="tablero" id="tablero"></div>
       <div class="accesos">
         <button class="boton suave" type="button" data-ir="palabras">📖 Mis palabras</button>
+        <button class="boton suave" type="button" data-ir="ajustes">⚙️ Ajustes</button>
       </div>
       <div class="repaso" id="repaso" hidden></div>
       <ol class="camino" id="camino"></ol>
@@ -61,6 +62,40 @@
       <input class="buscar" type="search" id="buscar" placeholder="Busca en español o en francés" aria-label="Buscar palabra" autocomplete="off">
       <div class="filtros" id="filtros" role="group" aria-label="Filtrar palabras"></div>
       <div id="lista-palabras"></div>
+    </div>
+  </section>
+
+  <!-- ajustes y respaldo -->
+  <section class="pantalla" id="p-ajustes" aria-labelledby="t-ajustes">
+    <div class="envoltura angosta">
+      <button class="volver" type="button" data-ir="inicio">← Volver</button>
+      <h2 class="titulo-pantalla" id="t-ajustes">Ajustes</h2>
+      <p class="bajada">Todo se guarda en este navegador.</p>
+
+      <fieldset class="ajuste">
+        <legend>Meta de cada día</legend>
+        <div class="metas" id="metas"></div>
+      </fieldset>
+
+      <fieldset class="ajuste">
+        <legend>Voz</legend>
+        <label class="interruptor-fila"><input type="checkbox" id="aj-voz"> <span>Pronunciar las palabras solas al aparecer</span></label>
+        <label class="interruptor-fila"><input type="checkbox" id="aj-lenta"> <span>Hablar más despacio</span></label>
+        <button class="boton suave" type="button" id="probar-voz">🔊 Probar la voz</button>
+        <p class="nota" id="nota-voz"></p>
+      </fieldset>
+
+      <fieldset class="ajuste">
+        <legend>Tu progreso</legend>
+        <p class="nota-fija">Para pasarlo a otro cel o compu, descarga el respaldo y cárgalo allá.</p>
+        <div class="botones-fila">
+          <button class="boton suave" type="button" id="descargar">⬇️ Descargar respaldo</button>
+          <label class="boton suave" for="cargar">⬆️ Cargar respaldo</label>
+          <input class="oculto" type="file" id="cargar" accept="application/json,.json">
+        </div>
+        <button class="borrar" type="button" id="borrar">Borrar todo mi progreso</button>
+        <p class="nota" id="nota-progreso" role="status"></p>
+      </fieldset>
     </div>
   </section>
 
