@@ -58,4 +58,16 @@ interface Progreso {
     // xp que pide la meta de cada dia
     meta: number;
     vozLenta: boolean;
+    // medalla y el dia en que se gano
+    medallas: Record<string, string>;
+    perfectas: number;
+    repasos: number;
+}
+
+interface Medalla {
+    id: string;
+    icono: string;
+    nombre: string;
+    como: string;
+    ganada: (p: Progreso) => boolean;
 }

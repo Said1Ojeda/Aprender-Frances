@@ -26,7 +26,7 @@
     }
     // progreso guardado
     const CLAVE = 'allez';
-    const nuevoProgreso = () => ({ unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 }, meta: 30, vozLenta: false });
+    const nuevoProgreso = () => ({ unidades: {}, tarjetas: {}, voz: true, xp: 0, racha: 0, ultimoDia: '', xpHoy: { dia: '', xp: 0 }, meta: 30, vozLenta: false, medallas: {}, perfectas: 0, repasos: 0 });
     function leerProgreso() {
         const base = nuevoProgreso();
         try {
@@ -82,6 +82,8 @@
             irPalabras();
         else if (b.dataset.ir === 'ajustes')
             irAjustes();
+        else if (b.dataset.ir === 'medallas')
+            irMedallas();
     }));
     // inicio
     const desbloqueada = (i) => i === 0 || (progreso.unidades[UNIDADES[i - 1].id]?.veces ?? 0) > 0;
@@ -279,6 +281,30 @@
         clearTimeout(esperaBuscar);
         esperaBuscar = window.setTimeout(pintarPalabras, 120);
     });
+    // medallas
+    // devuelve las que se acaban de ganar para festejarlas
+    function revisarMedallas() {
+        const nuevas = MEDALLAS.filter(m => !progreso.medallas[m.id] && m.ganada(progreso));
+        for (const m of nuevas)
+            progreso.medallas[m.id] = Repaso.dia();
+        return nuevas;
+    }
+    function irMedallas() {
+        const ganadas = MEDALLAS.filter(m => progreso.medallas[m.id]).length;
+        $('medallas-resumen').textContent = ganadas + ' de ' + MEDALLAS.length + ' ganadas.';
+        $('medallas').replaceChildren(...MEDALLAS.map(m => {
+            const fecha = progreso.medallas[m.id];
+            const li = crear('li', 'medalla' + (fecha ? ' ganada' : ''));
+            li.append(crear('span', 'medalla-icono', fecha ? m.icono : '🔒'), crear('b', '', m.nombre), crear('small', '', fecha ? 'Ganada el ' + fechaBonita(fecha) : m.como));
+            return li;
+        }));
+        mostrar('medallas');
+    }
+    const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    function fechaBonita(dia) {
+        const [a, m, d] = dia.split('-').map(Number);
+        return d + ' de ' + MESES[m - 1] + (a !== new Date().getFullYear() ? ' de ' + a : '');
+    }
     // ajustes
     const ajVoz = $('aj-voz');
     const ajLenta = $('aj-lenta');
@@ -850,7 +876,18 @@
             const antes = progreso.unidades[s.unidad.id];
             progreso.unidades[s.unidad.id] = { veces: (antes?.veces ?? 0) + 1, mejor: Math.max(antes?.mejor ?? 0, pct) };
         }
+        else {
+            progreso.repasos++;
+        }
+        if (pct === 1)
+            progreso.perfectas++;
+        const medallas = revisarMedallas();
         guardar();
+        $('nuevas').replaceChildren(...medallas.map(m => {
+            const d = crear('div', 'nueva-medalla');
+            d.append(crear('span', 'medalla-icono', m.icono), crear('b', '', '¡Medalla nueva! ' + m.nombre), crear('small', '', m.como));
+            return d;
+        }));
         $('fin-frase').textContent = pct === 1 ? 'Sin un solo error, impecable.' : pct >= .8 ? 'Muy bien, ya casi la dominas.' : 'Vas bien, repítela para afianzar.';
         const dato = (n, t) => {
             const d = crear('div', 'dato');
@@ -867,6 +904,10 @@
             extra.push('Cumpliste la meta de hoy.');
         if (extra.length)
             $('fin-frase').textContent += ' ' + extra.join(' ');
+        // se festeja lo que cuesta, no cada leccion, si no pierde chiste
+        const festejo = pct === 1 || nivel() > nivelAntes || medallas.length > 0;
+        if (festejo)
+            setTimeout(() => Confeti.lanzar(pct === 1 && medallas.length ? 180 : 120), 350);
         const tip = $('tip');
         if (s.unidad)
             tip.replaceChildren(crear('b', '', s.unidad.tip.titulo), crear('span', '', s.unidad.tip.texto));
