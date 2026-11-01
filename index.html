@@ -46,6 +46,7 @@
       <div class="tablero" id="tablero"></div>
       <div class="accesos">
         <button class="boton suave" type="button" data-ir="palabras">📖 Mis palabras</button>
+        <button class="boton suave" type="button" data-ir="medallas">🏅 Medallas</button>
         <button class="boton suave" type="button" data-ir="ajustes">⚙️ Ajustes</button>
       </div>
       <div class="repaso" id="repaso" hidden></div>
@@ -62,6 +63,16 @@
       <input class="buscar" type="search" id="buscar" placeholder="Busca en español o en francés" aria-label="Buscar palabra" autocomplete="off">
       <div class="filtros" id="filtros" role="group" aria-label="Filtrar palabras"></div>
       <div id="lista-palabras"></div>
+    </div>
+  </section>
+
+  <!-- medallas -->
+  <section class="pantalla" id="p-medallas" aria-labelledby="t-medallas">
+    <div class="envoltura angosta">
+      <button class="volver" type="button" data-ir="inicio">← Volver</button>
+      <h2 class="titulo-pantalla" id="t-medallas">Medallas</h2>
+      <p class="bajada" id="medallas-resumen"></p>
+      <ul class="medallas" id="medallas"></ul>
     </div>
   </section>
 
@@ -123,6 +134,7 @@
       <h2 id="t-fin">¡Lección terminada!</h2>
       <p class="bajada" id="fin-frase"></p>
       <div class="resumen" id="resumen"></div>
+      <div class="nuevas" id="nuevas"></div>
       <div class="tip" id="tip"></div>
       <button class="boton grande" type="button" data-ir="inicio">Seguir</button>
     </div>
@@ -132,6 +144,7 @@
 <script src="js/datos.js"></script>
 <script src="js/voz.js"></script>
 <script src="js/repaso.js"></script>
+<script src="js/medallas.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
