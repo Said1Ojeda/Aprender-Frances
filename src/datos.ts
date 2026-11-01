@@ -199,5 +199,57 @@ const UNIDADES: Unidad[] = [
             titulo: 'Embarazada y embarrassé',
             texto: 'El clásico, si dices je suis embarrassée no estás embarazada, estás apenada. Embarazada se dice enceinte. Ante la duda, mejor pregunta antes de usarla.'
         }
+    },
+    {
+        id: 'dias-meses',
+        titulo: 'Días y meses',
+        tituloFr: 'Les jours et les mois',
+        descripcion: 'Los días de la semana, algunos meses y hablar de hoy y mañana.',
+        color: '#4F7A28',
+        palabras: [
+            { fr: 'lundi', es: 'lunes', pista: 'lan-dí' },
+            { fr: 'mardi', es: 'martes', pista: 'mar-dí' },
+            { fr: 'mercredi', es: 'miércoles', pista: 'mer-kre-dí' },
+            { fr: 'jeudi', es: 'jueves', pista: 'yö-dí' },
+            { fr: 'vendredi', es: 'viernes', pista: 'van-dre-dí' },
+            { fr: 'samedi', es: 'sábado', pista: 'sam-dí' },
+            { fr: 'dimanche', es: 'domingo', pista: 'di-mansh' },
+            { fr: "aujourd'hui", es: 'hoy', pista: 'o-yur-duí' },
+            { fr: 'demain', es: 'mañana', pista: 'dö-man' },
+            { fr: 'hier', es: 'ayer', pista: 'iér' },
+            { fr: 'la semaine', es: 'la semana', pista: 'la sö-mén' },
+            { fr: 'janvier', es: 'enero', pista: 'yan-vié' },
+            { fr: 'juillet', es: 'julio', pista: 'yui-yé' },
+            { fr: 'décembre', es: 'diciembre', pista: 'de-sambr' }
+        ],
+        tip: {
+            titulo: 'Sin mayúscula y con le para lo que se repite',
+            texto: 'Los días y los meses van en minúscula, igual que en español. Si dices le lundi es los lunes, algo que pasa cada semana, y lundi solito es este lunes.'
+        }
+    },
+    {
+        id: 'ropa',
+        titulo: 'La ropa',
+        tituloFr: 'Les vêtements',
+        descripcion: 'Lo que te pones todos los días y cómo decir qué llevas puesto.',
+        color: '#B5458F',
+        palabras: [
+            { fr: 'la chemise', es: 'la camisa', pista: 'la shö-mís' },
+            { fr: 'le pantalon', es: 'el pantalón', pista: 'lö pan-ta-lón' },
+            { fr: 'la jupe', es: 'la falda', pista: 'la yüp' },
+            { fr: 'le pull', es: 'el suéter', pista: 'lö pül' },
+            { fr: 'la veste', es: 'la chaqueta', pista: 'la vest' },
+            { fr: 'le manteau', es: 'el abrigo', pista: 'lö man-tó' },
+            { fr: 'les chaussures', es: 'los zapatos', pista: 'le sho-sür' },
+            { fr: 'les chaussettes', es: 'los calcetines', pista: 'le sho-sét' },
+            { fr: 'le chapeau', es: 'el sombrero', pista: 'lö sha-pó' },
+            { fr: 'la casquette', es: 'la gorra', pista: 'la kas-két' },
+            { fr: 'le t-shirt', es: 'la playera', pista: 'lö ti-shört' },
+            { fr: 'je porte', es: 'llevo puesto', pista: 'yö port' }
+        ],
+        tip: {
+            titulo: 'Chaussures y chaussettes',
+            texto: 'Se parecen mucho, chaussures son los zapatos y chaussettes los calcetines. Para decir qué llevas puesto se usa porter, je porte une veste es llevo una chaqueta.'
+        }
     }
 ];
