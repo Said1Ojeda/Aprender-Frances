@@ -68,7 +68,7 @@
 
     // pantallas
 
-    type Pantalla = 'inicio' | 'leccion' | 'fin';
+    type Pantalla = 'inicio' | 'leccion' | 'fin' | 'palabras';
 
     function mostrar(p: Pantalla) {
         document.querySelectorAll<HTMLElement>('.pantalla').forEach(s => s.classList.toggle('activa', s.id === 'p-' + p));
@@ -78,6 +78,7 @@
 
     document.querySelectorAll<HTMLElement>('[data-ir]').forEach(b => b.addEventListener('click', () => {
         if (b.dataset.ir === 'inicio') irInicio();
+        else if (b.dataset.ir === 'palabras') irPalabras();
     }));
 
     // inicio
@@ -206,6 +207,105 @@
     }
 
     const unidadDe = (fr: string) => UNIDADES.find(u => u.palabras.some(p => p.fr === fr));
+
+    // todas las palabras, agrupadas por unidad
+
+    const buscar = $<HTMLInputElement>('buscar');
+
+    type Filtro = 'todas' | 'repasar' | 'aprendiendo' | 'aprendida' | 'nueva';
+    let filtro: Filtro = 'todas';
+
+    const ETIQUETA: Record<Filtro, string> = {
+        todas: 'Todas',
+        repasar: 'Por repasar',
+        aprendiendo: 'Aprendiendo',
+        aprendida: 'Aprendidas',
+        nueva: 'Nuevas'
+    };
+
+    const estadoDe = (p: Palabra) => Repaso.estado(progreso.tarjetas[p.fr]);
+
+    function irPalabras() {
+        buscar.value = '';
+        filtro = 'todas';
+        pintarPalabras();
+        mostrar('palabras');
+    }
+
+    function pintarFiltros() {
+        const cuenta: Record<Filtro, number> = { todas: 0, repasar: 0, aprendiendo: 0, aprendida: 0, nueva: 0 };
+        for (const u of UNIDADES) for (const p of u.palabras) {
+            cuenta.todas++;
+            cuenta[estadoDe(p)]++;
+        }
+        $('filtros').replaceChildren(...(Object.keys(ETIQUETA) as Filtro[]).map(f => {
+            const b = crear('button', 'filtro', ETIQUETA[f] + ' · ' + cuenta[f]);
+            b.type = 'button';
+            b.setAttribute('aria-pressed', String(f === filtro));
+            b.disabled = cuenta[f] === 0 && f !== filtro;
+            b.addEventListener('click', () => {
+                filtro = f;
+                pintarPalabras();
+            });
+            return b;
+        }));
+    }
+
+    function pintarPalabras() {
+        pintarFiltros();
+        const texto = sinAcentos(limpiar(buscar.value));
+        const coincide = (p: Palabra) => (filtro === 'todas' || estadoDe(p) === filtro)
+            && (!texto || sinAcentos(limpiar(p.fr + ' ' + p.es)).includes(texto));
+        let total = 0;
+
+        const grupos = UNIDADES.map(u => {
+            const lista = u.palabras.filter(coincide);
+            if (!lista.length) return null;
+            total += lista.length;
+            const grupo = crear('section', 'grupo-palabras');
+            grupo.style.setProperty('--c', u.color);
+            grupo.appendChild(crear('h3', '', u.titulo));
+            const ul = crear('ul', 'palabras');
+            for (const p of lista) ul.appendChild(filaPalabra(p));
+            grupo.appendChild(ul);
+            return grupo;
+        }).filter((g): g is HTMLElement => g !== null);
+
+        const lista = $('lista-palabras');
+        if (grupos.length) lista.replaceChildren(...grupos);
+        else lista.replaceChildren(crear('p', 'vacio', 'No hay palabras con «' + buscar.value.trim() + '».'));
+
+        const todas = UNIDADES.reduce((n, u) => n + u.palabras.length, 0);
+        $('palabras-resumen').textContent = texto || filtro !== 'todas'
+            ? total + (total === 1 ? ' palabra' : ' palabras') + ' de ' + todas
+            : todas + ' palabras y frases en ' + UNIDADES.length + ' unidades, ' + Repaso.aprendidas(progreso.tarjetas) + ' ya aprendidas.';
+    }
+
+    function filaPalabra(p: Palabra): HTMLElement {
+        const li = crear('li', 'fila-palabra');
+        const textos = crear('div', 'fila-textos');
+        const fr = crear('b', '', p.fr);
+        fr.lang = 'fr';
+        textos.append(fr, crear('span', '', p.es));
+        if (p.pista) textos.appendChild(crear('small', '', 'suena como ' + p.pista));
+        li.appendChild(textos);
+        const estado = estadoDe(p);
+        if (estado !== 'nueva') {
+            const t = progreso.tarjetas[p.fr];
+            const insignia = crear('span', 'insignia ' + estado, estado === 'repasar' ? 'Toca repasar' : estado === 'aprendida' ? 'Aprendida' : 'Aprendiendo');
+            insignia.title = 'Caja ' + t.caja + ' de 5';
+            li.appendChild(insignia);
+        }
+        if (Voz.puedeHablar()) li.appendChild(botonAltavoz(p.fr));
+        return li;
+    }
+
+    // se espera tantito para no repintar en cada letra
+    let esperaBuscar = 0;
+    buscar.addEventListener('input', () => {
+        clearTimeout(esperaBuscar);
+        esperaBuscar = window.setTimeout(pintarPalabras, 120);
+    });
 
     // armado de ejercicios
 

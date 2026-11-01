@@ -26,5 +26,13 @@ const Repaso = (() => {
     }
     // desde la caja 3 ya aguanto varios dias sin olvidarse
     const aprendidas = (tarjetas) => Object.values(tarjetas).filter(t => t.caja >= 3).length;
-    return { dia, registrar, pendientes, aprendidas };
+    // repasar gana sobre lo demas, aunque ya estuviera aprendida
+    function estado(t) {
+        if (!t)
+            return 'nueva';
+        if (t.toca <= dia())
+            return 'repasar';
+        return t.caja >= 3 ? 'aprendida' : 'aprendiendo';
+    }
+    return { dia, registrar, pendientes, aprendidas, estado };
 })();
